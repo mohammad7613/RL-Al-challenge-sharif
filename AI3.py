@@ -436,8 +436,8 @@ class AI3:
         dir0 = []
         healer_num1 = 0
         heroes_hp = my_heroes_hp(world)
-        heal = AbilityName.HEALER_HEAL.name
-        attack_healer = AbilityName.HEALER_ATTACK.name
+        heal = AbilityName.HEALER_HEAL
+        attack_healer = AbilityName.HEALER_ATTACK
         on_atak_healer = world.my_heroes[0].get_ability(attack_healer).is_ready()
         on_heal = world.my_heroes[0].get_ability(heal).is_ready()
         khatar_hero = []
@@ -522,7 +522,6 @@ class AI3:
             world.move_hero(hero=world.my_heroes[3], direction=DO[0])
 
         ###################################
-        world.Env_move_hero()
 
 
        ################################
@@ -536,7 +535,6 @@ class AI3:
         onn=world.opp_score
         print(mnn)
         print(onn)
-        world.Env_action_hero()
 
 
 

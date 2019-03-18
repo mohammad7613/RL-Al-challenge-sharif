@@ -219,6 +219,25 @@ class game:
         self.client2.pick(self.currentworld)
         self.currentworld.Env_pick_hero()
         print(self.currentworld.myturn)
+    def handle_move(self):
+        self.client1.move(game.currentworld)
+        self.currentworld.Env_move_hero()
+        self.client2.move(game.currentworld)
+        self.currentworld.Env_move_hero()
+    def handle_action(self):
+        self.client1.action(game.currentworld)
+        self.currentworld.Env_action_hero()
+        self.client2.action(game.currentworld)
+        self.currentworld.Env_action_hero()
+
+    def run(self):
+        while self.currentworld.game_over is False:
+            if (self.currentworld.current_phase == Phase.MOVE):
+                self.handle_move()
+            elif (self.currentworld.current_phase == Phase.ACTION):
+                self.handle_action()
+
+
 
 
 
@@ -226,37 +245,9 @@ if __name__ == '__main__':
    player1 = AI2()
    player2 = AI3()
    game=game(player1,player2)
-   print(game.currentworld.myturn)
-   print(game.currentworld.hero_constants[0].hero_name)
-   print(game.currentworld.game_constants.kill_score)
+   game.run()
 
-   # print(game.currentworld.counter)
-   # print(game.currentworld.current_phase)
-   # game.currentworld.Env_pick_hero()
-   # for heroconstant in game.currentworld.ability_constants:
-   #     print(heroconstant.name)
-   # for heroconstant in game.currentworld.hero_constants:
-   #     print(heroconstant.ability_names)
-   for hero in game.currentworld.my_heroes:
-       print(hero.name)
-       print("hhh")
 
-   for hero in game.currentworld.opp_heroes:
-       print(hero.name)
-       print("ffff")
-   # for cell in game.currentworld.map.my_respawn_zone:
-   #     print(cell.row)
-   #     print(cell.column)
-   print(len(game.currentworld.my_heroes))
-   # for i in range(7):
-   #     if(game.currentworld.current_phase==Phase.MOVE):
-   #         player1.move(game.currentworld)
-   #         print(game.currentworld.myturn)
-   #         player2.move(game.currentworld)
-   #     elif(game.currentworld.current_phase==Phase.ACTION):
-   #         player1.action(game.currentworld)
-   #         print(game.currentworld.myturn)
-   #         player2.action(game.currentworld)
 
 
 

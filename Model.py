@@ -138,6 +138,7 @@ class Hero:
         self.current_hp = 0
         self.update_abilities(abilities)
         self.is_protected=False #this attribute tell us that this hero is in protected in action phase by healer or guardian (change)
+        self.rem_respawm_time=0
 
     def update_abilities(self, abilities):
         self.abilities = abilities
@@ -278,6 +279,8 @@ class World:
         self.heroid_dict_action={} #this contain the hero id of my hero  want to make special action
         self.opp_heroid_dict_action={}# this contain the heroid of opp hero want to make special action
         self.counter=0# this is used for setting hero id (changed)
+        self.opp_new_dead_hero=[] #this contain dead hero in each turn
+        self.my_new_dead_hero=[]  #this contain dead hero in each turn
         if world is not None:
             game_constants = world._get_game_constants()
             self.game_constants = game_constants
@@ -291,12 +294,11 @@ class World:
             self.map = world.map
             self.queue = world.queue
             self.heroes = world.heroes
-        else:
-            self.queue = queue
+
+
 
     def _get_game_constants(self):
         return self.game_constants
-
     def get_my_dead_heroes(self):
         dead_heroes = []
         for hero in self.my_heroes:
@@ -321,75 +323,75 @@ class World:
             if hero.current_hp > 0:
                 live_memes += [hero]
         return live_memes
-    def _handle_init_message(self, msg):
-        if World.DEBUGGING_MODE:
-            if World.LOG_FILE_POINTER is not None:
-                World.LOG_FILE_POINTER.write(str(msg))
-                World.LOG_FILE_POINTER.write('\n')
-        msg = msg['args'][0]
-        self._game_constant_init(msg['gameConstants'])
-        self._map_init(msg["map"])
-        self._ability_constants_init(msg["abilityConstants"])
-        self._hero_init(msg["heroConstants"])
+    # def _handle_init_message(self, msg):(deleted function)
+    #     if World.DEBUGGING_MODE:
+    #         if World.LOG_FILE_POINTER is not None:
+    #             World.LOG_FILE_POINTER.write(str(msg))
+    #             World.LOG_FILE_POINTER.write('\n')
+    #     msg = msg['args'][0]
+    #     self._game_constant_init(msg['gameConstants'])
+    #     self._map_init(msg["map"])
+    #     self._ability_constants_init(msg["abilityConstants"])
+    #     self._hero_init(msg["heroConstants"])
 
-    def _handle_pick_message(self, msg):
-        import copy
-        msg = msg['args'][0]
-        my_heroes = msg["myHeroes"]
-        opp_heroes = msg["oppHeroes"]
-        self.current_turn = msg["currentTurn"]
-        for hero in my_heroes:
-            for first_hero in self.heroes:
-                if HeroName[hero["type"]] == first_hero.name:
-                    my_hero = copy.copy(first_hero)
-                    my_hero.id = hero["id"]
-                    my_hero.update_abilities([Ability(self._get_ability_constants(ability_name), 0)
-                                              for ability_name in my_hero.ability_names])
-                    self.my_heroes.append(my_hero)
-        for hero in opp_heroes:
-            for first_hero in self.heroes:
-                if HeroName[hero["type"]] == first_hero.name:
-                    opp_hero = copy.copy(first_hero)
-                    opp_hero.id = hero["id"]
-                    opp_hero.update_abilities([Ability(self._get_ability_constants(ability_name), 0) for ability_name
-                                               in opp_hero.ability_names])
-                    self.opp_heroes.append(opp_hero)
+    # def _handle_pick_message(self, msg):(deleted function)
+    #     import copy
+    #     msg = msg['args'][0]
+    #     my_heroes = msg["myHeroes"]
+    #     opp_heroes = msg["oppHeroes"]
+    #     self.current_turn = msg["currentTurn"]
+    #     for hero in my_heroes:
+    #         for first_hero in self.heroes:
+    #             if HeroName[hero["type"]] == first_hero.name:
+    #                 my_hero = copy.copy(first_hero)
+    #                 my_hero.id = hero["id"]
+    #                 my_hero.update_abilities([Ability(self._get_ability_constants(ability_name), 0)
+    #                                           for ability_name in my_hero.ability_names])
+    #                 self.my_heroes.append(my_hero)
+    #     for hero in opp_heroes:
+    #         for first_hero in self.heroes:
+    #             if HeroName[hero["type"]] == first_hero.name:
+    #                 opp_hero = copy.copy(first_hero)
+    #                 opp_hero.id = hero["id"]
+    #                 opp_hero.update_abilities([Ability(self._get_ability_constants(ability_name), 0) for ability_name
+    #                                            in opp_hero.ability_names])
+    #                 self.opp_heroes.append(opp_hero)
 
-    def _handle_turn_message(self, msg):
-        msg = msg['args'][0]
-        self.my_score = msg["myScore"]
-        self.opp_score = msg["oppScore"]
-        self.current_phase = Phase[msg["currentPhase"]]
-        self.ap = msg["AP"]
-        self.current_turn = msg["currentTurn"]
-        self._update_map(msg["map"])
-        my_heroes = msg["myHeroes"]
-        opp_heroes = msg["oppHeroes"]
-        self.move_phase_num = msg["movePhaseNum"]
-        self._update_heroes(my_heroes, self.my_heroes)
-        self._update_heroes(opp_heroes, self.opp_heroes)
-        self._handle_cast_ability(msg["myCastAbilities"], "my")
-        self._handle_cast_ability(msg["oppCastAbilities"], "opp")
+    # def _handle_turn_message(self, msg):(deleted function)
+    #     msg = msg['args'][0]
+    #     self.my_score = msg["myScore"]
+    #     self.opp_score = msg["oppScore"]
+    #     self.current_phase = Phase[msg["currentPhase"]]
+    #     self.ap = msg["AP"]
+    #     self.current_turn = msg["currentTurn"]
+    #     self._update_map(msg["map"])
+    #     my_heroes = msg["myHeroes"]
+    #     opp_heroes = msg["oppHeroes"]
+    #     self.move_phase_num = msg["movePhaseNum"]
+    #     self._update_heroes(my_heroes, self.my_heroes)
+    #     self._update_heroes(opp_heroes, self.opp_heroes)
+    #     self._handle_cast_ability(msg["myCastAbilities"], "my")
+    #     self._handle_cast_ability(msg["oppCastAbilities"], "opp")
 
-    def _handle_cast_ability(self, cast_abilities, my_or_opp):
-        cast_list = []
-        for cast_ability in cast_abilities:
-            targeted_list = []
-            for target in cast_ability["targetHeroIds"]:
-                targeted_list.append(target)
-            cast_list.append(CastAbility(cast_ability["casterId"], targeted_list,
-                                         self.map.get_cell(
-                                             cast_ability["startCell"]["row"] if "startCell" in cast_ability else -1,
-                                             cast_ability["startCell"][
-                                                 "column"] if "startCell" in cast_ability else -1),
-                                         self.map.get_cell(
-                                             cast_ability["endCell"]["row"] if "endCell" in cast_ability else -1,
-                                             cast_ability["endCell"]["column"] if "endCell" in cast_ability else -1),
-                                         AbilityName[cast_ability["abilityName"]]))
-        if my_or_opp == "my":
-            self.my_cast_abilities = cast_list
-        elif my_or_opp == "opp":
-            self.opp_cast_abilities = cast_list
+    # def _handle_cast_ability(self, cast_abilities, my_or_opp):(deleted fuction)
+    #     cast_list = []
+    #     for cast_ability in cast_abilities:
+    #         targeted_list = []
+    #         for target in cast_ability["targetHeroIds"]:
+    #             targeted_list.append(target)
+    #         cast_list.append(CastAbility(cast_ability["casterId"], targeted_list,
+    #                                      self.map.get_cell(
+    #                                          cast_ability["startCell"]["row"] if "startCell" in cast_ability else -1,
+    #                                          cast_ability["startCell"][
+    #                                              "column"] if "startCell" in cast_ability else -1),
+    #                                      self.map.get_cell(
+    #                                          cast_ability["endCell"]["row"] if "endCell" in cast_ability else -1,
+    #                                          cast_ability["endCell"]["column"] if "endCell" in cast_ability else -1),
+    #                                      AbilityName[cast_ability["abilityName"]]))
+    #     if my_or_opp == "my":
+    #         self.my_cast_abilities = cast_list
+    #     elif my_or_opp == "opp":
+    #         self.opp_cast_abilities = cast_list
 
     def get_ability_constants(self, name):
         for constant in self.ability_constants:
@@ -399,60 +401,60 @@ class World:
         for constant in self.hero_constants:
             if name == constant.name:
                 return constant 
-    def _update_heroes(self , heroes_list , main_hero_list):
+    # def _update_heroes(self , heroes_list , main_hero_list):
+    #
+    #     import copy
+    #     for new_hero in heroes_list:
+    #         hero_name = HeroName[new_hero["type"]]
+    #         hero = copy.copy(self._get_hero(hero_name))
+    #         hero.id = new_hero["id"]
+    #         hero.current_hp = new_hero["currentHP"]
+    #         cooldowns = new_hero.get("cooldowns")
+    #         hero.abilities = []
+    #         hero.dodge_abilities = []
+    #         hero.offensive_abilities = []
+    #         hero.defensive_abilities = []
+    #         if cooldowns is not None:
+    #             hero.abilities += [Ability(self._get_ability_constants(AbilityName[cooldown["name"]]),
+    #                                        cooldown["remCooldown"]) for cooldown in cooldowns]
+    #         else:
+    #             hero.abilities += [Ability(self._get_ability_constants(ability_name), -1)
+    #                                for ability_name in hero.ability_names]
+    #
+    #         hero.dodge_abilities += [ability for ability in hero.abilities
+    #                                  if ability.type == AbilityType.DODGE]
+    #         hero.offensive_abilities += [ability for ability in hero.abilities
+    #                                      if ability.type == AbilityType.OFFENSIVE]
+    #         hero.defensive_abilities += [ability for ability in hero.abilities
+    #                                      if ability.type == AbilityType.DEFENSIVE]
+    #
+    #         if "currentCell" not in new_hero:
+    #             hero.current_cell = Cell(row=-1, column=-1, is_wall=False, is_in_my_respawn_zone=False,
+    #                                      is_in_opp_respawn_zone=False, is_in_objective_zone=False, is_in_vision=False)
+    #         else:
+    #             hero.current_cell = self.map.get_cell(new_hero["currentCell"]["row"], new_hero["currentCell"]["column"])
+    #         recent_path = []
+    #         for recent in new_hero["recentPath"]:
+    #             recent_path.append(self.map.get_cell(recent["row"], recent["column"]))
+    #         hero.recent_path = recent_path
+    #         hero.respawn_time = new_hero["respawnTime"]
+    #         main_hero_list.append(hero)
 
-        import copy
-        for new_hero in heroes_list:
-            hero_name = HeroName[new_hero["type"]]
-            hero = copy.copy(self._get_hero(hero_name))
-            hero.id = new_hero["id"]
-            hero.current_hp = new_hero["currentHP"]
-            cooldowns = new_hero.get("cooldowns")
-            hero.abilities = []
-            hero.dodge_abilities = []
-            hero.offensive_abilities = []
-            hero.defensive_abilities = []
-            if cooldowns is not None:
-                hero.abilities += [Ability(self._get_ability_constants(AbilityName[cooldown["name"]]),
-                                           cooldown["remCooldown"]) for cooldown in cooldowns]
-            else:
-                hero.abilities += [Ability(self._get_ability_constants(ability_name), -1)
-                                   for ability_name in hero.ability_names]
+    # def _update_map(self, cells_map):(deleted fnction)
+    #     for row in range(int(self.map.row_num)):
+    #         for col in range(int(self.map.column_num)):
+    #             temp_cell = cells_map[row][col]
+    #             self.map.cells[row][col].is_in_vision = temp_cell["isInVision"]
 
-            hero.dodge_abilities += [ability for ability in hero.abilities
-                                     if ability.type == AbilityType.DODGE]
-            hero.offensive_abilities += [ability for ability in hero.abilities
-                                         if ability.type == AbilityType.OFFENSIVE]
-            hero.defensive_abilities += [ability for ability in hero.abilities
-                                         if ability.type == AbilityType.DEFENSIVE]
-
-            if "currentCell" not in new_hero:
-                hero.current_cell = Cell(row=-1, column=-1, is_wall=False, is_in_my_respawn_zone=False,
-                                         is_in_opp_respawn_zone=False, is_in_objective_zone=False, is_in_vision=False)
-            else:
-                hero.current_cell = self.map.get_cell(new_hero["currentCell"]["row"], new_hero["currentCell"]["column"])
-            recent_path = []
-            for recent in new_hero["recentPath"]:
-                recent_path.append(self.map.get_cell(recent["row"], recent["column"]))
-            hero.recent_path = recent_path
-            hero.respawn_time = new_hero["respawnTime"]
-            main_hero_list.append(hero)
-
-    def _update_map(self, cells_map):
-        for row in range(int(self.map.row_num)):
-            for col in range(int(self.map.column_num)):
-                temp_cell = cells_map[row][col]
-                self.map.cells[row][col].is_in_vision = temp_cell["isInVision"]
-
-    def _ability_constants_init(self, ability_list):
-
-        abilities = []
-        for dic in ability_list:
-            ability_constant = AbilityConstants(AbilityName[dic["name"]], AbilityType[dic["type"]], dic["range"],
-                                                dic["APCost"], dic["cooldown"], dic["areaOfEffect"], dic["power"],
-                                                dic["isLobbing"])
-            abilities.append(ability_constant)
-        self.ability_constants = abilities
+    # def _ability_constants_init(self, ability_list):(deleted function)
+    #
+    #     abilities = []
+    #     for dic in ability_list:
+    #         ability_constant = AbilityConstants(AbilityName[dic["name"]], AbilityType[dic["type"]], dic["range"],
+    #                                             dic["APCost"], dic["cooldown"], dic["areaOfEffect"], dic["power"],
+    #                                             dic["isLobbing"])
+    #         abilities.append(ability_constant)
+    #     self.ability_constants = abilities
     def Env_hero_constant_init(self,hero_constant_list):
         self.hero_constants=[]
         for dict in hero_constant_list:
@@ -490,29 +492,29 @@ class World:
         self.heroes = heroes
         self.hero_constants = constants
 
-    def _map_init(self, map):
-        row_num = map["rowNum"]
-        col_num = map["columnNum"]
-        cells_map = map["cells"]
-        cells = [[0 for _ in range(col_num)] for _ in range(row_num)]
-        objective_zone = []
-        my_respawn_zone = []
-        opp_respawn_zone = []
-        for row in range(int(row_num)):
-            for col in range(int(col_num)):
-                temp_cell = cells_map[row][col]
-                c = Cell(row=row, column=col, is_wall=temp_cell["isWall"],
-                         is_in_my_respawn_zone=temp_cell["isInMyRespawnZone"],
-                         is_in_opp_respawn_zone=temp_cell["isInOppRespawnZone"],
-                         is_in_objective_zone=temp_cell["isInObjectiveZone"], is_in_vision=False)
-                cells[row][col] = c
-                if c.is_in_objective_zone:
-                    objective_zone.append(c)
-                if c.is_in_my_respawn_zone:
-                    my_respawn_zone.append(c)
-                if c.is_in_opp_respawn_zone:
-                    opp_respawn_zone.append(c)
-        self.map = Map(cells, row_num, col_num, my_respawn_zone, opp_respawn_zone, objective_zone)
+    # def _map_init(self, map):
+    #     row_num = map["rowNum"]
+    #     col_num = map["columnNum"]
+    #     cells_map = map["cells"]
+    #     cells = [[0 for _ in range(col_num)] for _ in range(row_num)]
+    #     objective_zone = []
+    #     my_respawn_zone = []
+    #     opp_respawn_zone = []
+    #     for row in range(int(row_num)):
+    #         for col in range(int(col_num)):
+    #             temp_cell = cells_map[row][col]
+    #             c = Cell(row=row, column=col, is_wall=temp_cell["isWall"],
+    #                      is_in_my_respawn_zone=temp_cell["isInMyRespawnZone"],
+    #                      is_in_opp_respawn_zone=temp_cell["isInOppRespawnZone"],
+    #                      is_in_objective_zone=temp_cell["isInObjectiveZone"], is_in_vision=False)
+    #             cells[row][col] = c
+    #             if c.is_in_objective_zone:
+    #                 objective_zone.append(c)
+    #             if c.is_in_my_respawn_zone:
+    #                 my_respawn_zone.append(c)
+    #             if c.is_in_opp_respawn_zone:
+    #                 opp_respawn_zone.append(c)
+    #     self.map = Map(cells, row_num, col_num, my_respawn_zone, opp_respawn_zone, objective_zone)
     def map_init(self, map):
         row_num = map["rowNum"]
         col_num = map["columnNum"]
@@ -536,20 +538,20 @@ class World:
                 if c.is_in_opp_respawn_zone:
                     opp_respawn_zone.append(c)
         self.map = Map(cells, row_num, col_num, my_respawn_zone, opp_respawn_zone, objective_zone)
-    def _game_constant_init(self, game_constants_msg):
-        self.game_constants = GameConstants(max_ap=game_constants_msg["maxAP"],
-                                            preprocess_timeout=game_constants_msg["preprocessTimeout"],
-                                            first_move_timeout=game_constants_msg["firstMoveTimeout"],
-                                            normal_timeout=game_constants_msg["normalTimeout"],
-                                            max_turns=game_constants_msg["maxTurns"],
-                                            kill_score=game_constants_msg["killScore"],
-                                            objective_zone_score=game_constants_msg["objectiveZoneScore"],
-                                            max_score=game_constants_msg["maxScore"])
-        self.max_ap = self.game_constants.max_ap
-        self.max_turns = self.game_constants.max_turns
-        self.kill_score = self.game_constants.kill_score
-        self.objective_zone_score = self.game_constants.objective_zone_score
-        self.max_score = self.game_constants.max_score
+    # def _game_constant_init(self, game_constants_msg):(deleted function)
+    #     self.game_constants = GameConstants(max_ap=game_constants_msg["maxAP"],
+    #                                         preprocess_timeout=game_constants_msg["preprocessTimeout"],
+    #                                         first_move_timeout=game_constants_msg["firstMoveTimeout"],
+    #                                         normal_timeout=game_constants_msg["normalTimeout"],
+    #                                         max_turns=game_constants_msg["maxTurns"],
+    #                                         kill_score=game_constants_msg["killScore"],
+    #                                         objective_zone_score=game_constants_msg["objectiveZoneScore"],
+    #                                         max_score=game_constants_msg["maxScore"])
+    #     self.max_ap = self.game_constants.max_ap
+    #     self.max_turns = self.game_constants.max_turns
+    #     self.kill_score = self.game_constants.kill_score
+    #     self.objective_zone_score = self.game_constants.objective_zone_score
+    #     self.max_score = self.game_constants.max_score
     def Envgame_constant_init(self, game_constants_msg):
         self.game_constants = EnvGameConstants(max_ap=game_constants_msg["maxAP"],
                                             max_turns=game_constants_msg["maxTurns"],
@@ -561,11 +563,11 @@ class World:
         self.kill_score = self.game_constants.kill_score
         self.objective_zone_score = self.game_constants.objective_zone_score
         self.max_score = self.game_constants.max_score
-    def _get_hero(self, hero_type):
-        for hero in self.heroes:
-            if hero.name == hero_type:
-                return hero
-        return None
+    # def _get_hero(self, hero_type):(deleted fuction)
+    #     for hero in self.heroes:
+    #         if hero.name == hero_type:
+    #             return hero
+    #     return None
 
     def get_hero(self, hero_id):
         for hero in self.my_heroes:
@@ -616,25 +618,25 @@ class World:
             target_cell = self.map.get_cell(target_row, target_column)
         return self.get_impact_cells(ability_constant, start_cell, target_cell)[-1]
 
-    def get_impact_cells(self, ability_constant, start_cell, target_cell):
-        if ability_constant.is_lobbing:
-            if self.manhattan_distance(target_cell, start_cell) <= ability_constant.range:
-                return [target_cell]
-        if start_cell.is_wall or start_cell == target_cell and not ability_constant.is_lobbing:
-            return [start_cell]
-        last_cell = None
-        ray_cells = self.get_ray_cells(start_cell, target_cell)
-        impact_cells = []
-        for cell in ray_cells:
-            if self.manhattan_distance(cell, start_cell) > ability_constant.range:
-                continue
-            last_cell = cell
-            if self.is_affected(ability_constant, cell) or ability_constant.is_lobbing:
-                impact_cells.append(cell)
-                break
-        if last_cell not in impact_cells:
-            impact_cells.append(last_cell)
-        return impact_cells
+    # def get_impact_cells(self, ability_constant, start_cell, target_cell):(delted function important)
+    #     if ability_constant.is_lobbing:
+    #         if self.manhattan_distance(target_cell, start_cell) <= ability_constant.range:
+    #             return [target_cell]
+    #     if start_cell.is_wall or start_cell == target_cell and not ability_constant.is_lobbing:
+    #         return [start_cell]
+    #     last_cell = None
+    #     ray_cells = self.get_ray_cells(start_cell, target_cell)
+    #     impact_cells = []
+    #     for cell in ray_cells:
+    #         if self.manhattan_distance(cell, start_cell) > ability_constant.range:
+    #             continue
+    #         last_cell = cell
+    #         if self.is_affected(ability_constant, cell) or ability_constant.is_lobbing:
+    #             impact_cells.append(cell)
+    #             break
+    #     if last_cell not in impact_cells:
+    #         impact_cells.append(last_cell)
+    #     return impact_cells
 
     def is_affected(self, ability_constant, cell):
         return (self._get_opp_hero(cell) is not None and ability_constant.type == AbilityType.OFFENSIVE) or (
@@ -713,27 +715,27 @@ class World:
             if is_between(start, target, option):
                 return option
 
-    def get_ray_cells(self, start_cell, end_cell):
-        if not self.is_accessible(start_cell.row, start_cell.column):
-            return []
-        if start_cell == end_cell:
-            return [start_cell]
-        res = [start_cell]
-        former = start_cell
-        while res[-1] != end_cell:
-            current = res[-1]
-            neighbour = self._calculate_neighbour(start_cell, end_cell, current, former)
-            if neighbour is None:
-                break
-            if neighbour.is_wall:
-                break
-            if neighbour.row != current.row and neighbour.column != current.column and (
-                    self.map.get_cell(current.row, neighbour.column).is_wall
-                    or self.map.get_cell(neighbour.row, current.column).is_wall):
-                break
-            res += [neighbour]
-            former = current
-        return res
+    # def get_ray_cells(self, start_cell, end_cell):(deleted function important)
+    #     if not self.is_accessible(start_cell.row, start_cell.column):
+    #         return []
+    #     if start_cell == end_cell:
+    #         return [start_cell]
+    #     res = [start_cell]
+    #     former = start_cell
+    #     while res[-1] != end_cell:
+    #         current = res[-1]
+    #         neighbour = self._calculate_neighbour(start_cell, end_cell, current, former)
+    #         if neighbour is None:
+    #             break
+    #         if neighbour.is_wall:
+    #             break
+    #         if neighbour.row != current.row and neighbour.column != current.column and (
+    #                 self.map.get_cell(current.row, neighbour.column).is_wall
+    #                 or self.map.get_cell(neighbour.row, current.column).is_wall):
+    #             break
+    #         res += [neighbour]
+    #         former = current
+    #     return res
 
     def is_in_vision(self, start_cell=None, start_row=None, start_column=None, end_cell=None, end_row=None,
                      end_column=None):
@@ -1003,6 +1005,18 @@ class World:
         for hero in self.opp_heroes:
             for ability in hero.abilities:
                 ability.rem_cooldown-=1
+        #reduce the rem respawn_time of each dead hero
+        for hero in self.get_my_dead_heroes():
+            if hero.rem_respawm_time>0:
+               hero.rem_respawm_time-=1
+            else:
+                hero.current_hp=hero.max_hp
+        for hero in self.get_opp_dead_heroes():
+            if hero.rem_respawm_time>0:
+               hero.rem_respawm_time-=1
+            else:
+                hero.current_hp=hero.max_hp
+
         if self.myturn==1:
             for heroid in self.heroid_dict_action:
                 for ability in self.heroid_dict_action[heroid]:
@@ -1065,13 +1079,29 @@ class World:
         if(self.check_flag==2):
             self.check_flag=0
             live_my_heros=self.get_my_live_heroes()
-            live_opp_heros=self.get_my_opp_heroes()
+            live_opp_heros=self.get_opp_live_heroes()
             for item in self.save_my_offensive_ability:
                 for heroid in item:#this for has one iteration
                     for ability in item[heroid]:#this for has one iterarion
                         for hero in live_opp_heros:
                             if self.manhattan_distance(start_cell=hero.current_cell,end_cell=item[heroid][ability])<ability.area_of_affect:
                                 hero.current_hp-=ability.power
+                                if (hero.current_hp <= 0):
+                                    self.opp_new_dead_hero += [hero]
+                                    hero.rem_respawm_time = hero.respawn_time
+                                    flag = []
+                                    m = 0
+                                    # check for cell in respawn zone that is empyty this algoritm can be improved(should be improved)
+                                    for cell in self.map.my_respawn_zone:
+                                        i = 0
+                                        for hero in self.get_my_dead_heroes():
+                                            if cell == hero.current_cell:
+                                                i = 1
+                                        if i == 0:
+                                            flag += [m]
+                                        m += 1
+                                    a = np.random.permutation(4)
+                                    hero.current_cell = self.map.my_respawn_zone[a[0]]
                         self.my_ap-=ability.power
                         ability.rem_cooldown = ability.cooldown
             for item in self.save_opp_offensive_ability:
@@ -1080,6 +1110,24 @@ class World:
                         for hero in live_my_heros:
                             if self.manhattan_distance(start_cell=hero.current_cell,end_cell=item[heroid][ability])<ability.area_of_affect:
                                 hero.current_hp-=ability.power
+                                if(hero.current_hp<=0):
+                                    self.my_new_dead_hero+=[hero]
+                                    hero.rem_respawm_time=hero.respawn_time
+                                    flag=[]
+                                    m=0
+                                    # check for cell in respawn zone that is empyty this algoritm can be improved(should be improved)
+                                    for cell in self.map.my_respawn_zone:
+                                        i=0
+                                        for hero in self.get_my_dead_heroes() :
+                                           if cell==hero.current_cell:
+                                               i=1
+                                        if i==0:
+                                            flag+=[m]
+                                        m+=1
+                                    a=np.random.permutation(4)
+                                    hero.current_cell=self.map.my_respawn_zone[a[0]]
+
+
                         self.my_ap-=ability.power
                         ability.rem_cooldown = ability.cooldown
             self.move_phase_num=1
@@ -1094,13 +1142,17 @@ class World:
 
             self.Env_upadate_score()
     def Env_upadate_score(self,):
-        for hero in self.get_my_dead_heroes():
+        for hero in self.my_new_dead_hero:
             self.opp_score += self.game_constants.kill_score
-            if (hero.current_cell.is_in_objective_zone):
-                self.opp_score += self.game_constants.objective_zone_score
-        for hero in self.get_opp_dead_heroes():
+        self.my_new_dead_hero=[]
+        for hero in self.get_my_live_heroes():
+            if hero.current_cell.is_in_objective_zone:
+                self.my_score += self.game_constants.objective_zone_score
+        for hero in self.opp_new_dead_hero:
             self.my_score += self.game_constants.kill_score
-            if (hero.current_cell.is_in_objective_zone):
+        self.opp_new_dead_hero=[]
+        for hero in self.get_opp_live_heroes():
+            if hero.current_cell.is_in_objective_zone:
                 self.opp_score += self.game_constants.objective_zone_score
         # check_for game over
         if (self.current_turn == self.game_constants.max_turns):
@@ -1116,7 +1168,6 @@ class World:
             World.LOG_FILE_POINTER.write('\n' + '-------pick hero-------' + '\n' + str(hero_name) + '\nturn: ' +
                                          str(self.current_turn) + '\n\n')
         #self.queue.put(Event('pick', [hero_name.value, self.current_turn]))
-
         self.deque.append([hero_name])
     def Env_pick_hero(self):
         abilities=[]
@@ -1180,33 +1231,33 @@ class World:
             return AbilityType.DEFENSIVE
 
 
-class Event:
-    EVENT = "event‌"
-
-    def __init__(self, type, args):
-        self.type = type
-        self.args = args
-
-    def add_arg(self, arg):
-        self.args.append(arg)
-
-
-class ServerConstants:
-    KEY_ARGS = "args"
-    KEY_NAME = "name"
-    KEY_TYPE = "type"
-
-    CONFIG_KEY_IP = "ip"
-    CONFIG_KEY_PORT = "port"
-    CONFIG_KEY_TOKEN = "token"
-
-    MESSAGE_TYPE_EVENT = "event"
-    MESSAGE_TYPE_INIT = "init"
-    MESSAGE_TYPE_PICK = "pick"
-    MESSAGE_TYPE_SHUTDOWN = "shutdown"
-    MESSAGE_TYPE_TURN = "turn"
-
-    CHANGE_TYPE_ADD = "a"
-    CHANGE_TYPE_DEL = "d"
-    CHANGE_TYPE_MOV = "m"
-    CHANGE_TYPE_ALT = "c"
+# class Event:(delted class)
+#     EVENT = "event‌"
+#
+#     def __init__(self, type, args):
+#         self.type = type
+#         self.args = args
+#
+#     def add_arg(self, arg):
+#         self.args.append(arg)
+#
+#
+# class ServerConstants:(deleted class)
+#     KEY_ARGS = "args"
+#     KEY_NAME = "name"
+#     KEY_TYPE = "type"
+#
+#     CONFIG_KEY_IP = "ip"
+#     CONFIG_KEY_PORT = "port"
+#     CONFIG_KEY_TOKEN = "token"
+#
+#     MESSAGE_TYPE_EVENT = "event"
+#     MESSAGE_TYPE_INIT = "init"
+#     MESSAGE_TYPE_PICK = "pick"
+#     MESSAGE_TYPE_SHUTDOWN = "shutdown"
+#     MESSAGE_TYPE_TURN = "turn"
+#
+#     CHANGE_TYPE_ADD = "a"
+#     CHANGE_TYPE_DEL = "d"
+#     CHANGE_TYPE_MOV = "m"
+#     CHANGE_TYPE_ALT = "c"
