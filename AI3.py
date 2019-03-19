@@ -13,7 +13,7 @@ def get_path_move_directions(start_cell, end_cell, world):
     parents = {}
     path = []
     my_hero_pos = []
-    for hero in world.my_heroes:
+    for hero in world.opp_heroes:
         my_hero_pos.append(hero.current_cell)
     front = Queue()
     front.put(start_cell)
@@ -86,27 +86,27 @@ def get_path_move_directions(start_cell, end_cell, world):
 def my_heros_cells(world):
     CEL=[0,0,0,0]
     i=0
-    for hero in world.my_heroes:
+    for hero in world.opp_heroes:
         CEL[i] = hero.current_cell
         i=i+1
     return CEL
-def my_heroes_hp(world):
+def opp_heroes_hp(world):
     hp = []
-    for hero in  world.my_heroes :
+    for hero in  world.opp_heroes :
         h = hero.current_hp
         hp.append(h)
     return hp
 def my_heros_rows(world):
     ROW=[0,0,0,0]
     i=0
-    for hero in world.my_heroes:
+    for hero in world.opp_heroes:
         ROW[i] = hero.current_cell.row
         i=i+1
     return ROW
 def my_heros_columns(world):
     COL = [0, 0, 0, 0]
     i = 0
-    for hero in world.my_heroes:
+    for hero in world.opp_heroes:
         COL[i] = hero.current_cell.column
         i = i + 1
     return COL
@@ -265,7 +265,7 @@ def healpos(world,hero):
                     if my_hero_is_invision(world, hero) is False and len(dishealer)>0:
                        if min(dishealer) < 5 :
                           goodhealerpos.append(cel)
-    print("goodhealerpos=", goodhealerpos)
+    #print("goodhealerpos=", goodhealerpos)
     return goodhealerpos
 def healer(world,opcels,opcel):
 
@@ -422,38 +422,40 @@ class AI3:
 
 
     def move(self, world):
-        print("move")
-        my_heroes_cel = my_heros_cells(world)
+        #print("move")
+        opp_heroes_cel = my_heros_cells(world)
         opp=oplive(world)
         c = world.map.objective_zone
 
             #################################################################healer aval
         objective_zone_cells = world.map.objective_zone
-        myhero = world.my_heroes
+        myhero = world.opp_heroes
 
-        cell0 = world.my_heroes[0].current_cell
+        cell0 = world.opp_heroes[0].current_cell
         goodpos1 = healpos(world,myhero[0])
         dir0 = []
         healer_num1 = 0
-        heroes_hp = my_heroes_hp(world)
+        heroes_hp = opp_heroes_hp(world)
         heal = AbilityName.HEALER_HEAL
         attack_healer = AbilityName.HEALER_ATTACK
-        on_atak_healer = world.my_heroes[0].get_ability(attack_healer).is_ready()
-        on_heal = world.my_heroes[0].get_ability(heal).is_ready()
+        name=world.opp_heroes[0]
+        h = world.opp_heroes[0].get_ability(attack_healer)
+        on_atak_healer=h.is_ready()
+        on_heal = world.opp_heroes[0].get_ability(heal).is_ready()
         khatar_hero = []
         khatar = opp_hero_attacked(world, myhero[0])
         for hero in myhero :
             kh = opp_hero_attacked(world,hero)
             khatar_hero.append(kh)
 
-        print("khatar_hero.append(kh)=",khatar_hero)
+        #print("khatar_hero.append(kh)=",khatar_hero)
 ##################################### ES 1    :    go to best cell
-        print("goodpos1=",goodpos1)
+        #print("goodpos1=",goodpos1)
         if len(goodpos1)>0 :
            best_cell = nearest_cel(world,cell0,goodpos1)
-           print("best_cell =",best_cell)
+           #print("best_cell =",best_cell)
            dir1_0 = world.get_path_move_directions(start_cell=cell0,end_cell=best_cell[0])
-           print("dir1_0",dir1_0)
+           #print("dir1_0",dir1_0)
            if len(dir1_0)==0 and healer_num1 == 0:
                healer_num1 = 1
            if len(dir1_0)>0 and healer_num1 == 0 :
@@ -481,14 +483,14 @@ class AI3:
                 healer_num1 =1
             if heroes_hp[2]<heroes_hp[3] and healer_num1==0 :
                 if heroes_hp[2]<70 :
-                    dir2_0 = world.get_path_move_directions(start_cell=cell0,end_cell=my_heroes_cel[2])
-                    if world.manhattan_distance(cell0,my_heroes_cel[2])<=4 and on_heal is True:
+                    dir2_0 = world.get_path_move_directions(start_cell=cell0,end_cell=opp_heroes_cel[2])
+                    if world.manhattan_distance(cell0,opp_heroes_cel[2])<=4 and on_heal is True:
                         healer_num1 = 1
                     elif  healer_num1==0 and len(dir2_0)>0:
                          world.move_hero(myhero[0],dir2_0[0])
             elif heroes_hp[3]<70 :
-                dir3_0 = world.get_path_move_directions(start_cell=cell0,end_cell=my_heroes_cel[3])
-                if world.manhattan_distance(cell0,my_heroes_cel[3])<=4 and on_heal is True :
+                dir3_0 = world.get_path_move_directions(start_cell=cell0,end_cell=opp_heroes_cel[3])
+                if world.manhattan_distance(cell0,opp_heroes_cel[3])<=4 and on_heal is True :
                     healer_num1 = 1
                 elif healer_num1 == 0 and len(dir3_0)>0:
                     world.move_hero(myhero[0],dir3_0[0])
@@ -505,21 +507,21 @@ class AI3:
             iii = [0,1,2,3]
             for ii in iii:
                 if heroes_hp[ii] == min(heroes_hp):
-                    dir5_0 = world.get_path_move_directions(start_cell=cell0, end_cell=my_heroes_cel[ii])
-                    if world.manhattan_distance(cell0, my_heroes_cel[ii]) <= 4 and on_heal is True:
+                    dir5_0 = world.get_path_move_directions(start_cell=cell0, end_cell=opp_heroes_cel[ii])
+                    if world.manhattan_distance(cell0, opp_heroes_cel[ii]) <= 4 and on_heal is True:
                         healer_num1 = 1
                     elif healer_num1 == 0 and len(dir5_0)>0:
                         world.move_hero(myhero[0], dir5_0[0])
 
-        DO = world.get_path_move_directions(start_cell=my_heroes_cel[1], end_cell=c[10])
+        DO = world.get_path_move_directions(start_cell=opp_heroes_cel[1], end_cell=c[10])
         if len(DO) > 0:
-            world.move_hero(hero=world.my_heroes[1], direction=DO[0])
-        DO = world.get_path_move_directions(start_cell=my_heroes_cel[2], end_cell=c[5])
+            world.move_hero(hero=world.opp_heroes[1], direction=DO[0])
+        DO = world.get_path_move_directions(start_cell=opp_heroes_cel[2], end_cell=c[5])
         if len(DO) > 0:
-            world.move_hero(hero=world.my_heroes[2], direction=DO[0])
-        DO = world.get_path_move_directions(start_cell=my_heroes_cel[3], end_cell=c[15])
+            world.move_hero(hero=world.opp_heroes[2], direction=DO[0])
+        DO = world.get_path_move_directions(start_cell=opp_heroes_cel[3], end_cell=c[15])
         if len(DO) > 0:
-            world.move_hero(hero=world.my_heroes[3], direction=DO[0])
+            world.move_hero(hero=world.opp_heroes[3], direction=DO[0])
 
         ###################################
 

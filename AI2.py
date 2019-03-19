@@ -4,8 +4,6 @@ from random import randint
 import numpy as np
 import time
 from queue import Queue
-#############################################################functions
-##################my hero
 def get_path_move_directions(start_cell, end_cell, world):
     # doing a bfs from start until reaching end cell while keeping parents:
 
@@ -83,327 +81,7 @@ def get_path_move_directions(start_cell, end_cell, world):
                     front.put(new_cell)
 
     return path
-def my_heros_cells(world):
-    CEL=[0,0,0,0]
-    i=0
-    for hero in world.my_heroes:
-        CEL[i] = hero.current_cell
-        i=i+1
-    return CEL
-def my_heroes_hp(world):
-    hp = []
-    for hero in  world.my_heroes :
-        h = hero.current_hp
-        hp.append(h)
-    return hp
-def my_heros_rows(world):
-    ROW=[0,0,0,0]
-    i=0
-    for hero in world.my_heroes:
-        ROW[i] = hero.current_cell.row
-        i=i+1
-    return ROW
-def my_heros_columns(world):
-    COL = [0, 0, 0, 0]
-    i = 0
-    for hero in world.my_heroes:
-        COL[i] = hero.current_cell.column
-        i = i + 1
-    return COL
-def my_hero_in_area(hero,world,area):
-    l = 0
-    for cell in area:
-        if cell == hero.current_cell or (cell.row==hero.current_cell.row and cell.column==hero.current_cell.column ):
-            l = l + 1
-            break
-    if l==0:
-        return False
-    elif l==1:
-        return True
-def my_hero_is_invision(world,hero):
-    cellmyhero = hero.current_cell
-    oppcellhero = oplive(world)
-    i=0
-    for cell in oppcellhero :
-        if world.is_in_vision(cellmyhero,cell) is  True :
-            i=1
-            break
-    if i==0 :
-       return False
-    elif i == 1:
-       return True
-##################opp hero
-def opp_heros_cells(world):
-    OPCEL = [0, 0, 0, 0]
-    i = 0
-    for ophero in world.opp_heroes:
-        opcel = ophero.current_cell
-        row = opcel.row
-        if row != -1:
-            OPCEL[i] = ophero.current_cell
-        i = i + 1
-    return OPCEL
-def opp_heros_rows(world):
-    OPROW = [0, 0, 0, 0]
-    i = 0
-    for ophero in world.opp_heroes:
-        opcel = ophero.current_cell
-        row = opcel.row
-        if row != -1:
-            OPROW[i] = ophero.current_cell.row
-        i = i + 1
-    return OPROW
-def opp_heros_columns(world):
-    OPCOL = [0, 0, 0, 0]
-    i = 0
-    for ophero in world.opp_heroes:
-        opcel = ophero.current_cell
-        row = opcel.row
-        if row != -1:
-            OPCOL[i] = ophero.current_cell.column
-        i = i + 1
-    return OPCOL
-def opp_hero_in_area(hero,world,area):
-    ol = 0
-    for cell in area:
-        if hero.current_cell.row != -1:
-            if cell == hero.current_cell:
-                ol = ol + 1
-                break
-    if ol==0 :
-        return False
-    if ol !=0:
-        return True
-def opp_hero_attacked(world,hero) :
-    mycell = hero.current_cell
-    l=0
-    for opphero in world.opp_heroes:
-        oppcell = opphero.current_cell
-        if oppcell.row != -1:
-            if hero.name is HeroName.BLASTER:
-                r=world.get_ability_targets(ability_name=AbilityName.BLASTER_ATTACK, start_cell=mycell,target_cell=oppcell)
-                if len(r)>0:
-                   l = l + 1
-            if hero is HeroName.GUARDIAN:
-                r=world.get_ability_targets(ability_name=AbilityName.GUARDIAN_ATTACK, start_cell=mycell,target_cell=oppcell) 
-                if len(r)>0:
-                   l = l + 1
-            if hero is HeroName.HEALER:
-                r=world.get_ability_targets(ability_name=AbilityName.HEALER_ATTACK, start_cell=mycell,target_cell=oppcell)
-                if len(r)>0:
-                   l = l + 1
-            if hero is HeroName.SENTRY:
-                r=world.get_ability_targets(ability_name=AbilityName.SENTRY_ATTACK, start_cell=mycell,target_cell=oppcell)
-                if len(r)>0:
-                   l = l + 1
-    return l
-def oplive(world):
-    opli=[]
-    for hero in world.opp_heroes:
-        if hero.current_cell.row !=-1:
-            h=hero.current_cell
-            opli.append(h)
-    return opli
-def get_nearest_opponent_distance(world, cell):
-    heroes = world.get_opp_live_hero()
-    minn = 31 * 31
-    for hero in heroes:
-        if hero.current_cell.row != -1:
-            minn = min(world.manhattan_distance(cell, hero.current_cell), minn)
-    return minn
-def nearest_opphero(world,cell):
-    e=get_nearest_opponent_distance(world,cell)
-    ophero=world.get_opp_live_hero()
-    if e==world.manhattan_distance(cell,ophero[0].current_cell):
-        return ophero[0]
-    elif e==world.manhattan_distance(cell,ophero[1].current_cell):
-        return ophero[1]
-    elif e==world.manhattan_distance(cell,ophero[2].current_cell):
-        return ophero[2]
-    elif e==world.manhattan_distance(cell,ophero[3].current_cell):
-        return ophero[3]
-def is_enemy_in_vision(world, cell, dis):
-    heroes = world.opp_heroes
-    for hero in heroes:
-        if hero.current_cell.row != -1:
-            if world.is_in_vision(start_cell=cell, end_cell=hero.current_cell) is True and \
-                    world.manhattan_distance(start_cell=cell, end_cell=hero.current_cell) <= dis:
-                return True
-    return False
-##################HERO Abilities
-def distance_healer(world,cell) :
-    mycel = cell
-    dis = []
-    opcel = oplive(world)
-    for celll in opcel:
-        d = world.manhattan_distance(start_cell=mycel,end_cell=celll)
-        dis.append(d)
-    return dis
-def healpos(world,hero):
-    c=world.map.objective_zone
-    E = []
-    T = []
-    for cel in c:
-        ui = cel.row
-        iu = cel.column
-        E.append(ui)
-        T.append(iu)
-    mxro = max(E)
-    mxco = max(T)
-    miro = min(E)
-    mico = min(T)
-    olv = oplive(world)
-    mapo = world.map.cells
-    senatk = []
-    goodhealerpos = []
-    for list in mapo:
-        for cel in list:
-            if cel.is_wall is False:
-                if cel.row >= (miro - 3) and cel.row <= (mxro + 3) and cel.column >= (mico - 3) and cel.column <= (
-                        mxco + 3):
-                    dishealer = distance_healer(world, cel)
-                    if my_hero_is_invision(world, hero) is False and len(dishealer)>0:
-                       if min(dishealer) < 5 :
-                          goodhealerpos.append(cel)
-    print("goodhealerpos=", goodhealerpos)
-    return goodhealerpos
-def healer(world,opcels,opcel):
 
-    ll=world.map.objective_zone
-    posishen = []
-    for cell in ll:
-        if world.manhattan_distance(cell, opcel) == 4:
-           posishen.append(cell)
-    return posishen
-def hero_heal(world,hero):
-    cell=hero.current_cell
-    ll=world.map.objective_zone
-    posishen = []
-    for cel in ll:
-        if world.manhattan_distance(cel, cell) <= 4:
-           posishen.append(cell)
-    return posishen
-def area_for_healer(world) :
-    c = world.map.objective_zone
-    E = []
-    T = []
-    for cel in c:
-        ui = cel.row
-        iu = cel.column
-        E.append(ui)
-        T.append(iu)
-    mxro = max(E)
-    mxco = max(T)
-    miro = min(E)
-    mico = min(T)
-    mapo = world.map.cells
-    area = []
-    for list in mapo:
-        for cel in list:
-            if cel.is_wall is False:
-                if cel.row >= (miro - 3) and cel.row <= (mxro + 3) and cel.column >= (mico - 3) and cel.column >= (
-                        mxco + 3):
-                    area.append(cel)
-    return area
-###################only cells and area
-def nearest_cel(world,cel,cells):
-    cell=[]
-    f=[]
-    for c in cells:
-        dir=world.get_path_move_directions(start_cell=cel,end_cell=c)
-        fasele=len(dir)
-        f.append(fasele)
-    a=min(f)
-    for c in cells:
-        dir = world.get_path_move_directions(start_cell=cel,end_cell=c)
-        fasele = len(dir)
-        if fasele==a:
-            cell.append(c)
-    return cell
-def cell_in_direction(world,start_cell,end_cell):
-    dir = world.get_path_move_directions(start_cell=start_cell,end_cell=end_cell)
-    cel = []
-    f= start_cell
-    cel.append(f)
-    for d in dir :
-        c = world._get_next_cell(cell = f , direction= d)
-        cel.append(c)
-        f = c
-    return cel
-def pos(world,cel,d):
-    map=world.map.cells
-    posishen=[]
-    for list in map:
-        for cell in list :
-            if cell.is_wall is False :
-                if world.manhattan_distance(cell,cel)<d:
-                    posishen.append(cell)
-
-    return posishen
-###################dodge
-
-def dogcel(world,cell,end_cell,dr):
-    map1 = world.map.cells
-    ro=cell.row
-    co=cell.column
-    R=[ro+1,ro+2,ro+3,ro+4,ro-3,ro-4,ro-5]
-    C=[co+1,co+2,co+3,co+4,co+5,co-3,co-4,co-5]
-    area = []
-    tolmasir = []
-    g=None
-    hhh = 31*31
-    for r in R:
-        for c in C:
-            cel=world.map.get_cell(row=r,column=c)
-            if world.manhattan_distance(start_cell=cell, end_cell=cel) < (dr + 1):
-                area.append(cel)
-    for cel in area:
-        masir = world.get_path_move_directions(start_cell=cel, end_cell=end_cell)
-        h = len(masir)
-        if h < hhh:
-            hhh = h
-            tolmasir.append(cel)
-            break
-        h3 = len(tolmasir) - 1
-        g = tolmasir[h3]
-    return g
-def bestdoge(world,start_cell,end_cell,dr):
-    map1 = world.map.cells
-    # BordDoge = world.hero.dodge_abilities
-    BordDoge=dr
-    area = []
-    tolmasir =[]
-    cell_direction = cell_in_direction(world,start_cell,end_cell)
-    i = 0
-    tol=[]
-    g=[]
-    fg=[]
-    celdog=None
-    for cell in cell_direction :
-        area = []
-        tolmasir = []
-        for list  in map1 :
-            for c in list:
-                if world.manhattan_distance(start_cell=cell, end_cell=c) < dr + 1:
-                    area.append(c)
-        for cel in area :
-            masir = world.get_path_move_directions(start_cell=cel, end_cell = end_cell)
-            h = len(masir)
-            tolmasir.append(h)
-        for cel in area :
-            masir = world.get_path_move_directions(start_cell=cel, end_cell=end_cell)
-            h = len(masir)
-            if h == min(tolmasir) :
-                g.append(cel)
-                break
-        o=len(world.get_path_move_directions(start_cell=start_cell,end_cell=cell))
-        od=min(tolmasir)+o
-        fg.append(od)
-        if od==min(fg):
-            celdog=cell
-    return celdog
-  
-####################################################################################################################
 class AI2:
 
 
@@ -414,124 +92,3518 @@ class AI2:
 
     def pick(self, world):
         print("pick")
-        print("im in pick AI2")
-        world.pick_hero(HeroName.HEALER)
-        world.pick_hero(HeroName.HEALER)
-        world.pick_hero(HeroName.GUARDIAN)
-        world.pick_hero(HeroName.GUARDIAN)
-
+        J=world.my_heroes
+        print("im in pick AI3")
+        world.pick_hero(HeroName.BLASTER)
+        world.pick_hero(HeroName.BLASTER)
+        world.pick_hero(HeroName.BLASTER)
+        world.pick_hero(HeroName.BLASTER)
 
     def move(self, world):
         print("move")
-        my_heroes_cel = my_heros_cells(world)
-        opp=oplive(world)
         c = world.map.objective_zone
-
-            #################################################################healer aval
-        objective_zone_cells = world.map.objective_zone
-        myhero = world.my_heroes
-
-        cell0 = world.my_heroes[0].current_cell
-        goodpos1 = healpos(world,myhero[0])
-        dir0 = []
-        healer_num1 = 0
-        heroes_hp = my_heroes_hp(world)
-        heal = AbilityName.HEALER_HEAL
-        attack_healer = AbilityName.HEALER_ATTACK
-        on_atak_healer = world.my_heroes[0].get_ability(attack_healer).is_ready()
-        on_heal = world.my_heroes[0].get_ability(heal).is_ready()
-        khatar_hero = []
-        khatar = opp_hero_attacked(world, myhero[0])
-        for hero in myhero :
-            kh = opp_hero_attacked(world,hero)
-            khatar_hero.append(kh)
-
-        print("khatar_hero.append(kh)=",khatar_hero)
-##################################### ES 1    :    go to best cell
-        print("goodpos1=",goodpos1)
-        if len(goodpos1)>0 :
-           best_cell = nearest_cel(world,cell0,goodpos1)
-           print("best_cell =",best_cell)
-           dir1_0 = world.get_path_move_directions(start_cell=cell0,end_cell=best_cell[0])
-           print("dir1_0",dir1_0)
-           if len(dir1_0)==0 and healer_num1 == 0:
-               healer_num1 = 1
-           if len(dir1_0)>0 and healer_num1 == 0 :
-               world.move_hero(hero=myhero[0],direction=dir1_0[0])
-               healer_num1 = 1
-
-####################################### ES 2     :  farar kone
-        if khatar > 2 and healer_num1 == 0:
-            min_khatar = min(khatar_hero)
-            for heroo in myhero :
-                if opp_hero_attacked(world,heroo) == min_khatar:
-                    ce = heroo.current_cell
-                    dir6_0 = world.get_path_move_directions(start_cell=cell0,end_cell=ce)
-                    world.move_hero(hero=myhero[0], direction=dir6_0[0])
-                    healer_num1 =1
-####################################### ES 3       : heal kone
-        if healer_num1 == 0 :
-             goodcell2 = nearest_cel(world,cell0,objective_zone_cells)
-             dir1_1 = world.get_path_move_directions(start_cell=cell0, end_cell=goodcell2[0])
-             if len(dir1_1) > 0:
-                 world.move_hero(hero=myhero[0], direction=dir1_1[0])
-                 healer_num1 = 1
-        if cell0.is_in_objective_zone is True and healer_num1==0 :
-            if heroes_hp[0] < 70 and opp_hero_attacked(world,myhero[0]) > 0 and on_heal is True :
-                healer_num1 =1
-            if heroes_hp[2]<heroes_hp[3] and healer_num1==0 :
-                if heroes_hp[2]<70 :
-                    dir2_0 = world.get_path_move_directions(start_cell=cell0,end_cell=my_heroes_cel[2])
-                    if world.manhattan_distance(cell0,my_heroes_cel[2])<=4 and on_heal is True:
-                        healer_num1 = 1
-                    elif  healer_num1==0 and len(dir2_0)>0:
-                         world.move_hero(myhero[0],dir2_0[0])
-            elif heroes_hp[3]<70 :
-                dir3_0 = world.get_path_move_directions(start_cell=cell0,end_cell=my_heroes_cel[3])
-                if world.manhattan_distance(cell0,my_heroes_cel[3])<=4 and on_heal is True :
-                    healer_num1 = 1
-                elif healer_num1 == 0 and len(dir3_0)>0:
-                    world.move_hero(myhero[0],dir3_0[0])
-######################################### ES 4         : attack kone   2  ##############################################
-        if len(opp)>0 and cell0.is_in_objective_zone is True and heroes_hp[0]>70 and heroes_hp[2]>70 and heroes_hp[3]>70 and healer_num1==0 :
-            near_op_hero= nearest_opphero(world,cell0)
-            dir4_0 = world.get_path_move_directions(start_cell=cell0, end_cell=near_op_hero.current_cell)
-            if world.manhattan_distance(cell0, near_op_hero.current_cell) <= 4 and on_atak_healer is True:
-                healer_num1 =1
-            elif healer_num1 == 0 and len(dir4_0)>0 :
-               world.move_hero(myhero[0], dir4_0[0])
-######################################## ES 5          : baghie ra heal kone
-        if len(opp) ==0 :
-            iii = [0,1,2,3]
-            for ii in iii:
-                if heroes_hp[ii] == min(heroes_hp):
-                    dir5_0 = world.get_path_move_directions(start_cell=cell0, end_cell=my_heroes_cel[ii])
-                    if world.manhattan_distance(cell0, my_heroes_cel[ii]) <= 4 and on_heal is True:
-                        healer_num1 = 1
-                    elif healer_num1 == 0 and len(dir5_0)>0:
-                        world.move_hero(myhero[0], dir5_0[0])
-
-        DO = world.get_path_move_directions(start_cell=my_heroes_cel[1], end_cell=c[10])
-        if len(DO) > 0:
-            world.move_hero(hero=world.my_heroes[1], direction=DO[0])
-        DO = world.get_path_move_directions(start_cell=my_heroes_cel[2], end_cell=c[5])
-        if len(DO) > 0:
-            world.move_hero(hero=world.my_heroes[2], direction=DO[0])
-        DO = world.get_path_move_directions(start_cell=my_heroes_cel[3], end_cell=c[15])
-        if len(DO) > 0:
-            world.move_hero(hero=world.my_heroes[3], direction=DO[0])
-
-        ###################################
-
-
-
+        res=world.map.my_respawn_zone
+        ####################################
+        OPCEL=[0,0,0,0]
+        OPROW=[0,0,0,0]
+        OPCOL=[0,0,0,0]
+        i=0
+        for ophero in world.opp_heroes:
+            opcel = ophero.current_cell
+            row = opcel.row
+            if row != -1:
+              OPCEL[i] = ophero.current_cell
+              OPCOL[i]=OPCEL[i].column
+              OPROW[i]= OPCEL[i].row
+            i = i + 1
        ################################
-        
-       
+        CEL=[0,0,0,0]
+        COL=[0,0,0,0]
+        ROW=[0,0,0,0]
+        i=0
+        for hero in world.my_heroes:
+            CEL[i] = hero.current_cell
+            COL[i] =  CEL[i].column
+            ROW[i] =  CEL[i].row
+            i = i + 1
+        ##################################################################
+
+        ol = 0
+        for cell in c:
+            if OPCOL[0] != 0 and OPROW[0] != -1:
+                if cell == OPCEL[0]:
+                    ol = ol + 1
+                    break
+        ol1 = 0
+        for cell in c:
+            if OPCOL[1] != 0 and OPROW[1] != -1:
+                if cell == OPCEL[1]:
+                    ol1 = ol1 + 1
+                    break
+        ol2 = 0
+        for cell in c:
+            if OPCOL[2] != 0 and OPROW[2] != -1:
+                if cell == OPCEL[2]:
+                    ol2 = ol2 + 1
+                    break
+        ol3 = 0
+        for cell in c:
+            if OPCOL[3] != 0 and OPROW[3] != -1:
+                if cell == OPCEL[3]:
+                    ol3 = ol3 + 1
+                    break
+        FAZ =world.move_phase_num
+        #############################################################
+        U = len(c)
+        A=U//2
+        V=U//4
+        VV=(U//4)*3
+        E=[]
+        T=[]
+        for cel in c:
+            ui=cel.row
+            iu=cel.column
+            E.append(ui)
+            T.append(iu)
+        mxro=max(E)
+        mxco=max(T)
+        miro=min(E)
+        mico=min(T)
+        R=c[0].row
+        C=c[0].column
+        G = []
+        H = []
+        M = []
+        N = []
+        for cel in c:
+            r=cel.row
+            cl=cel.column
+            if r>=miro and r<=((mxro+miro)//2) and cl>=mico and cl<=((mxco+mico)//2):
+                G.append(cel)
+            elif r>(((mxro+miro)//2)) and cl>=mico and cl<=((mxco+mico)//2):
+                H.append(cel)
+            elif r>(((mxro+miro)//2)) and cl>((mxco+mico)//2) :
+                N.append(cel)
+            elif r>=miro and r<=((mxro+miro)//2) and cl>((mxco+mico)//2) :
+                M.append(cel)
+        if world.my_heroes[0].current_hp > 0:
+           DO = get_path_move_directions(start_cell=CEL[0],end_cell=G[3],world=world)
+        if world.my_heroes[1].current_hp>0:
+           DO1 =get_path_move_directions(start_cell=CEL[1], end_cell=H[3] ,world=world)
+        if world.my_heroes[2].current_hp > 0:
+           DO2 = get_path_move_directions(start_cell=CEL[2], end_cell=M[1] ,world=world)
+        if world.my_heroes[3].current_hp > 0:
+           DO3 = get_path_move_directions(start_cell=CEL[3], end_cell=N[2] ,world=world)
+        l = 0
+        for cell in G:
+            if cell == CEL[0]:
+                l = l + 1
+                break
+        l1 = 0
+        for cell in H:
+            if cell == CEL[1]:
+                l1 = l + 1
+                break
+        l2 = 0
+        for cell in M:
+            if cell == CEL[2]:
+                l2 = l + 1
+                break
+        l3 = 0
+        for cell in N:
+            if cell == CEL[3]:
+                l3 = l + 1
+                break
+        # i=0
+        # for cel in c:
+        #     i=i+1
+        #     if i<(V+1):
+        #         G.append(cel)
+        #     elif i>(V) and i<(A+1):
+        #         H.append(cel)
+        #     elif i > (A) and i<(VV+1)   :
+        #         M.append(cel)
+        #     elif i>(VV):
+        #         N.append(cel)
+
+
+        #####################################################################
+        f = AbilityName.BLASTER_BOMB
+        h = world.my_heroes[0].get_ability(f).is_ready()
+        h1 = world.my_heroes[1].get_ability(f).is_ready()
+        h2 = world.my_heroes[2].get_ability(f).is_ready()
+        h3 = world.my_heroes[3].get_ability(f).is_ready()
+        #####################################################################
+        fa = AbilityName.BLASTER_ATTACK
+        hh = world.my_heroes[0].get_ability(fa).is_ready()
+        hh1 = world.my_heroes[1].get_ability(fa).is_ready()
+        hh2 = world.my_heroes[2].get_ability(fa).is_ready()
+        hh3 = world.my_heroes[3].get_ability(fa).is_ready()
+        ######################################################################
+        faa = AbilityName.BLASTER_DODGE
+        hhh = world.my_heroes[0].get_ability(faa).is_ready()
+        hhh1 = world.my_heroes[1].get_ability(faa).is_ready()
+        hhh2 = world.my_heroes[2].get_ability(faa).is_ready()
+        hhh3 = world.my_heroes[3].get_ability(faa).is_ready()
+        ########################################################################
+        # if CEL[0].is_in_my_respawn_zone :
+        #     j=CEL[0].row
+        #     b = CEL[0].column
+        #     PR=[j,j+1,j+2,j+3,j+4,j-1,j-2,j-3,j-4]
+        #     PC=[b,b+1,b+2,b+3,b+4,b-1,b-2,b-3,b-4]
+        #     for r in PR:
+        #         for c in PC:
+        #            if world.manhattan_distance(start_cell_row=j,start_cell_column=b,end_cell_row=r,end_cell_column=c) <5:
+        #
+        ded=world.get_my_dead_heroes()
+        if len(ded)>0:
+            bb = 0
+            uuuu=0
+            uuu = 0
+            D = 0
+            if h1 is True and uuu == 0 and l1 != 0 and D == 0 and world.my_heroes[1].current_hp > 0:
+                good4 = []
+                good1 = []
+                good2 = []
+                good3 = []
+                uuu = 0
+                bb = 0
+                for cel in H:
+                    j = 0
+                    if OPCOL[0] != 0:
+                        if world.manhattan_distance(start_cell=cel, end_cell=OPCEL[0]) < 3:
+                            j = j + 1
+                    if OPCOL[1] != 0:
+                        if world.manhattan_distance(start_cell=cel, end_cell=OPCEL[1]) < 3:
+                            j = j + 1
+                    if OPCOL[2] != 0:
+                        if world.manhattan_distance(start_cell=cel, end_cell=OPCEL[2]) < 3:
+                            j = j + 1
+                    if OPCOL[3] != 0:
+                        if world.manhattan_distance(start_cell=cel, end_cell=OPCEL[3]) < 3:
+                            j = j + 1
+                    if j == 4:
+                        good4.append(cel)
+
+                    elif j == 3:
+                        good3.append(cel)
+
+                    elif j == 2:
+                        good2.append(cel)
+
+                    elif j == 1:
+                        good1.append(cel)
+                if len(good4) > 0:
+                    ff = []
+                    B = []
+                    for gd in good4:
+                        ff = []
+                        B = []
+                        if world.manhattan_distance(start_cell=CEL[1], end_cell=gd) < 6:
+                            bb = 1
+                            break
+                        elif uuu == 0 and bb == 0:
+                            ff = []
+                            B = []
+                            for cel in H:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    ff.append(cel)
+                    if bb == 0:
+                        for fff in ff:
+                            dg =get_path_move_directions(start_cell=CEL[1], end_cell=fff ,world=world)
+                            B.append(len(dg))
+                        if len(B) > 0:
+                            Y = B.index(min(B))
+                            if (B[Y] + FAZ - 1) < 7 and bb == 0:
+                                dg = get_path_move_directions(start_cell=CEL[1], end_cell=ff[Y],world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[1], direction=dg[0])
+                                    uuu = 1
+                elif uuu == 0 and bb == 0 and len(good3) > 0:
+                    ff = []
+                    B = []
+                    for gd in good3:
+                        ff = []
+                        B = []
+                        if world.manhattan_distance(CEL[1], gd) < 6:
+                            bb = 1
+                            break
+                        elif uuu == 0 and bb == 0:
+                            ff = []
+                            B = []
+                            for cel in H:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    ff.append(cel)
+                    if bb == 0:
+                        for fff in ff:
+                            dg = get_path_move_directions(start_cell=CEL[1], end_cell=fff ,world=world)
+                            B.append(len(dg))
+                        if len(B) > 0:
+                            Y = B.index(min(B))
+                            if (B[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[1], end_cell=ff[Y] , world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[1], direction=dg[0])
+                                    uuu = 1
+                elif uuu == 0 and bb == 0 and len(good2) > 0:
+                    fff2 = []
+                    BB2 = []
+                    for gd in good2:
+                        fff2 = []
+                        BB2 = []
+                        if world.manhattan_distance(CEL[1], gd) < 6:
+                            bb = 1
+                            break
+                        elif uuu == 0 and bb == 0:
+                            fff2 = []
+                            BB2 = []
+                            for cel in H:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    fff2.append(cel)
+                    if bb == 0:
+                        for fff in fff2:
+                            dg = get_path_move_directions(start_cell=CEL[1], end_cell=fff , world=world)
+                            BB2.append(len(dg))
+                        if len(BB2) > 0:
+                            Y = BB2.index(min(BB2))
+                            if (BB2[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[1], end_cell=fff2[Y] , world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[1], direction=dg[0])
+                                    uuu = 1
+                elif uuu == 0 and bb == 0 and len(good1) > 0:
+                    fff1 = []
+                    BB1 = []
+                    for gd in good1:
+                        fff1 = []
+                        BB1 = []
+                        if world.manhattan_distance(CEL[1], gd) < 6:
+                            bb = 1
+                            break
+                        elif uuu == 0 and bb == 0:
+                            fff1 = []
+                            BB1 = []
+                            for cel in H:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    fff1.append(cel)
+                    if bb == 0:
+                        for fff in fff1:
+                            dg = get_path_move_directions(start_cell=CEL[1], end_cell=fff , world=world)
+                            BB1.append(len(dg))
+                        if len(BB1) > 0:
+                            Y = BB1.index(min(BB1))
+                            if (BB1[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[1], end_cell=fff1[Y] , world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[1], direction=dg[0])
+                                    uuu = 1
+            # if hhh1 is True and  bb == 0 and uuuu==0:
+            #     uuuu = 0
+            #     if OPCOL[0] != 0 and uuuu == 0:
+            #         if world.opp_heroes[0].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[0].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[1], OPCEL[0]) < 8:
+            #                     for cel in H:
+            #                         if world.manhattan_distance(start_cell=CEL[1], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[2] and cel != CEL[3] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            #     if OPCOL[1] != 0 and uuuu == 0:
+            #         if world.opp_heroes[1].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[1].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[1], OPCEL[1]) < 8:
+            #                     for cel in H:
+            #                         if world.manhattan_distance(start_cell=CEL[1], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[2] and cel != CEL[3] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            #     if OPCOL[2] != 0 and uuuu == 0:
+            #         if world.opp_heroes[2].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[2].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[1], OPCEL[2]) < 8:
+            #                     for cel in H:
+            #                         if world.manhattan_distance(start_cell=CEL[1], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[2] and cel != CEL[3] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            #     if OPCOL[3] != 0 and uuuu == 0:
+            #         if world.opp_heroes[3].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[3].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[1], OPCEL[3]) < 8:
+            #                     for cel in H:
+            #                         if world.manhattan_distance(start_cell=CEL[1], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[2] and cel != CEL[3] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            if hh1 is True and uuu == 0 and bb == 0 and l1 != 0 and D == 0 and hhh1 is False and uuuu==0 and h1 is False and world.my_heroes[1].current_hp > 0:
+                Q = []
+                for cel in H:
+                    K = 0
+                    if OPCOL[0] != 0:
+                        if world.get_impact_cell(ability=world.my_heroes[1].get_ability(fa), start_cell=cel,target_cell=OPCEL[0]) == OPCEL[0]:
+                            Q.append(cel)
+                            K = 1
+                    if OPCOL[1] != 0 and K == 0:
+                        if world.get_impact_cell(ability=world.my_heroes[1].get_ability(fa), start_cell=cel,target_cell=OPCEL[1]) == OPCEL[1]:
+                            Q.append(cel)
+                            K = 1
+                    if OPCOL[2] != 0 and K == 0:
+                        if world.get_impact_cell(ability=world.my_heroes[1].get_ability(fa), start_cell=cel,target_cell=OPCEL[2]) == OPCEL[2]:
+                            Q.append(cel)
+                            K = 1
+                    if OPCOL[3] != 0 and K == 0:
+                        if world.get_impact_cell(ability=world.my_heroes[1].get_ability(fa), start_cell=cel,target_cell=OPCEL[3]) == OPCEL[3]:
+                            Q.append(cel)
+                            K = 1
+                i = 0
+                bbbb = []
+                ww = 1000
+                bbbb.clear()
+                D = 0
+                if len(Q) > 0:
+                    for q in Q:
+                        if q == CEL[1]:
+                            D = 1
+                            break
+                        else:
+                            e = get_path_move_directions(start_cell=CEL[1], end_cell=q , world=world)
+                            s = len(e)
+                            bbbb.append(s)
+                    if len(bbbb) > 0:
+                        a = bbbb.index(min(bbbb))
+                        if D == 0:
+                            e = get_path_move_directions(start_cell=CEL[1], end_cell=Q[a] , world=world)
+                            if len(e) > 0 and (len(e) + FAZ - 1) < 7:
+                                world.move_hero(hero=world.my_heroes[1], direction=e[0])
+                                uuu = 1
+            # if hhh1 is False and uuu == 0 and bb == 0 and l1 != 0 and D == 0:
+            #     i = 0
+            #     j = 0
+            #     good4 = []
+            #     good1 = []
+            #     good2 = []
+            #     good3 = []
+            #     good = []
+            #     uuu = 0
+            #     bb = 0
+            #     for cel in H:
+            #         j = 0
+            #         if OPCOL[0] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[0]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[0] == 0:
+            #             j = j + 1
+            #         if OPCOL[1] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[1]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[1] == 0:
+            #             j = j + 1
+            #         if OPCOL[2] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[2]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[2] == 0:
+            #             j = j + 1
+            #         if OPCOL[3] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[3]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[3] == 0:
+            #             j = j + 1
+            #         if j == 4:
+            #             good4.append(cel)
+            #
+            #         elif j == 3:
+            #             good3.append(cel)
+            #
+            #         elif j == 2:
+            #             good2.append(cel)
+            #
+            #         elif j == 1:
+            #             good1.append(cel)
+            #     if len(good4) != 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good4:
+            #             if gd == CEL[1]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[1], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         if bb == 0 and len(ff) > 0:
+            #             for fff in ff:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[1], end_cell=fff)
+            #                 B.append(len(dg))
+            #             if len(B) > 0:
+            #                 Y = B.index(min(B))
+            #                 if (B[Y] + FAZ - 1) < 7:
+            #                     dg = world.get_path_move_directions(start_cell=CEL[1], end_cell=ff[Y])
+            #                     if len(dg) > 0:
+            #                         world.move_hero(hero=world.my_heroes[1], direction=dg[0])
+            #                         uuu = 1
+            #
+            #
+            #     elif uuu == 0 and bb == 0 and len(good3) > 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good3:
+            #             if gd == CEL[1]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[1], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         if bb == 0 and len(ff) > 0:
+            #             for fff in ff:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[1], end_cell=fff)
+            #                 B.append(len(dg))
+            #             if len(B) > 0:
+            #                 Y = B.index(min(B))
+            #                 if (B[Y] + FAZ - 1) < 7:
+            #                     dg = world.get_path_move_directions(start_cell=CEL[1], end_cell=ff[Y])
+            #                     if len(dg) > 0:
+            #                         world.move_hero(hero=world.my_heroes[1], direction=dg[0])
+            #                         uuu = 1
+            #
+            #
+            #     elif uuu == 0 and bb == 0 and len(good2) > 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good2:
+            #             if gd == CEL[1]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[1], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         if bb == 0 and len(ff) > 0:
+            #             for fff in ff:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[1], end_cell=fff)
+            #                 B.append(len(dg))
+            #             if len(B) > 0:
+            #                 Y = B.index(min(B))
+            #                 if (B[Y] + FAZ - 1) < 7:
+            #                     dg = world.get_path_move_directions(start_cell=CEL[1], end_cell=ff[Y])
+            #                     if len(dg) > 0:
+            #                         world.move_hero(hero=world.my_heroes[1], direction=dg[0])
+            #                         uuu = 1
+            #
+            #
+            #     elif uuu == 0 and bb == 0 and len(good1) > 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good1:
+            #             if gd == CEL[1]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[1], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         if bb == 0 and len(ff) > 0:
+            #             for fff in ff:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[1], end_cell=fff)
+            #                 B.append(len(dg))
+            #             if len(B) > 0:
+            #                 Y = B.index(min(B))
+            #                 if (B[Y] + FAZ - 1) < 7:
+            #                     dg = world.get_path_move_directions(start_cell=CEL[1], end_cell=ff[Y])
+            #                     if len(dg) > 0:
+            #                         world.move_hero(hero=world.my_heroes[1], direction=dg[0])
+            #                         uuu = 1
+            if uuu == 0 and bb == 0 and D == 0 and uuuu==0 and world.my_heroes[1].current_hp > 0 and l1==0:
+                if len(DO1) > 0:
+                    world.move_hero(hero=world.my_heroes[1], direction=DO1[0])
+                    uuu = 1
+            uuu = 0
+            bb = 0
+            D = 0
+            uuuu = 0
+            if h is True and uuu == 0 and l != 0 and D == 0 and world.my_heroes[0].current_hp > 0:
+                i = 0
+                j = 0
+                good4 = []
+                good1 = []
+                good2 = []
+                good3 = []
+                uuu = 0
+                bb = 0
+                for cel in G:
+                    j = 0
+                    if OPCOL[0] != 0:
+                        if world.manhattan_distance(cel, OPCEL[0]) < 3:
+                            j = j + 1
+                    if OPCOL[1] != 0:
+                        if world.manhattan_distance(cel, OPCEL[1]) < 3:
+                            j = j + 1
+                    if OPCOL[2] != 0:
+                        if world.manhattan_distance(cel, OPCEL[2]) < 3:
+                            j = j + 1
+                    if OPCOL[3] != 0:
+                        if world.manhattan_distance(cel, OPCEL[3]) < 3:
+                            j = j + 1
+                    if j == 4:
+                        good4.append(cel)
+
+                    elif j == 3:
+                        good3.append(cel)
+
+                    elif j == 2:
+                        good2.append(cel)
+
+                    elif j == 1:
+                        good1.append(cel)
+                if len(good4) != 0:
+                    ff = []
+                    B = []
+                    for gd in good4:
+                        if world.manhattan_distance(CEL[0], gd) < 6:
+                            bb = 1
+                            break
+                        else:
+                            for cel in G:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    ff.append(cel)
+                    if bb == 0 and uuu == 0:
+                        for fff in ff:
+                            dg = get_path_move_directions(start_cell=CEL[0], end_cell=fff , world=world)
+                            B.append(len(dg))
+                        if len(B) > 0:
+                            Y = B.index(min(B))
+                            if (B[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[0], end_cell=ff[Y] ,  world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[0], direction=dg[0])
+                                    uuu = 1
+
+                elif uuu == 0 and bb == 0 and len(good3) > 0:
+                    ff = []
+                    B = []
+                    for gd in good3:
+                        if world.manhattan_distance(CEL[0], gd) < 6:
+                            bb = 1
+                            break
+                        else:
+                            for cel in G:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    ff.append(cel)
+                    if bb == 0 and uuu == 0:
+                        for fff in ff:
+                            dg =get_path_move_directions(start_cell=CEL[0], end_cell=fff , world=world)
+                            B.append(len(dg))
+                        if len(B) > 0:
+                            Y = B.index(min(B))
+                            if (B[Y] + FAZ - 1) < 7:
+                                dg =get_path_move_directions(start_cell=CEL[0], end_cell=ff[Y] ,  world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[0], direction=dg[0])
+                                    uuu = 1
+                elif uuu == 0 and bb == 0 and len(good2) > 0:
+                    fff2 = []
+                    BB2 = []
+                    for gd in good2:
+                        if world.manhattan_distance(CEL[0], gd) < 6:
+                            bb = 1
+                            break
+                        else:
+                            for cel in G:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    fff2.append(cel)
+                    if bb == 0 and uuu == 0:
+                        for fff in fff2:
+                            dg =get_path_move_directions(start_cell=CEL[0], end_cell=fff , world=world)
+                            BB2.append(len(dg))
+                        if len(BB2) > 0:
+                            Y = BB2.index(min(BB2))
+                            if (BB2[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[0], end_cell=fff2[Y] , world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[0], direction=dg[0])
+                                    uuu = 1
+
+
+                elif uuu == 0 and bb == 0 and len(good1) > 0:
+                    fff1 = []
+                    BB1 = []
+                    for gd in good1:
+                        if world.manhattan_distance(CEL[0], gd) < 6:
+                            bb = 1
+                            break
+                        else:
+                            for cel in G:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    fff1.append(cel)
+                    if bb == 0 and uuu == 0:
+                        for fff in fff1:
+                            dg = get_path_move_directions(start_cell=CEL[0], end_cell=fff , world=world)
+                            BB1.append(len(dg))
+                        if len(BB1) > 0:
+                            Y = BB1.index(min(BB1))
+                            if (BB1[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[0], end_cell=fff1[Y] , world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[0], direction=dg[0])
+                                    uuu = 1
+            # if hhh is True and  bb ==0 and uuuu==0 :
+            #     uuuu = 0
+            #     if OPCOL[0] != 0 and uuuu == 0:
+            #         if world.opp_heroes[0].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[0].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[0], OPCEL[0]) < 8:
+            #                     for cel in G:
+            #                         if world.manhattan_distance(start_cell=CEL[0], end_cell=cel) > 2 and cel != CEL[1] and cel != CEL[2] and cel != CEL[3] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            #     if OPCOL[1] != 0 and uuuu == 0:
+            #         if world.opp_heroes[1].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[1].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[0], OPCEL[1]) < 8:
+            #                     for cel in G:
+            #                         if world.manhattan_distance(start_cell=CEL[0], end_cell=cel) > 2 and cel != CEL[1] and cel != CEL[2] and cel != CEL[3] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            #     if OPCOL[2] != 0 and uuuu == 0:
+            #         if world.opp_heroes[2].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[2].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[0], OPCEL[2]) < 8:
+            #                     for cel in G:
+            #                         if world.manhattan_distance(start_cell=CEL[0], end_cell=cel) > 2 and cel != CEL[1] and cel != CEL[2] and cel != CEL[3] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            #     if OPCOL[3] != 0 and uuuu == 0:
+            #         if world.opp_heroes[3].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[3].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[0], OPCEL[3]) < 8:
+            #                     for cel in G:
+            #                         if world.manhattan_distance(start_cell=CEL[0], end_cell=cel) > 2 and cel != CEL[1] and cel != CEL[2] and cel != CEL[3] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            if hh is True and uuu == 0 and bb == 0 and l != 0 and D == 0 and uuuu==0 and hhh is False and h is False and world.my_heroes[0].current_hp > 0:
+                Q = []
+                for cel in G:
+                    K = 0
+                    if OPCOL[0] != 0:
+                        if world.get_impact_cell(ability=world.my_heroes[0].get_ability(fa), start_cell=cel,target_cell=OPCEL[0]) == OPCEL[0]:
+                            Q.append(cel)
+                            K = 1
+                    if OPCOL[1] != 0 and K == 0:
+                        if world.get_impact_cell(ability=world.my_heroes[0].get_ability(fa), start_cell=cel,target_cell=OPCEL[1]) == OPCEL[1]:
+                            Q.append(cel)
+                            K = 1
+                    if OPCOL[2] != 0 and K == 0:
+                        if world.get_impact_cell(ability=world.my_heroes[0].get_ability(fa), start_cell=cel,target_cell=OPCEL[2]) == OPCEL[2]:
+                            Q.append(cel)
+                            K = 1
+                    if OPCOL[3] != 0 and K == 0:
+                        if world.get_impact_cell(ability=world.my_heroes[0].get_ability(fa), start_cell=cel,target_cell=OPCEL[3]) == OPCEL[3]:
+                            Q.append(cel)
+                            K = 1
+                i = 0
+                bbbb = []
+                bbbb.clear()
+                D = 0
+                if len(Q) > 0:
+                    for q in Q:
+                        if q == CEL[0]:
+                            D = 1
+                            break
+                        else:
+                            e = get_path_move_directions(start_cell=CEL[0], end_cell=q , world=world)
+                            s = len(e)
+                            bbbb.append(s)
+                    if len(bbbb) > 0:
+                        a = bbbb.index(min(bbbb))
+                        if D == 0:
+                            e = get_path_move_directions(start_cell=CEL[0], end_cell=Q[a] , world=world)
+                            if len(e) > 0 and (len(e) + FAZ - 1) < 7:
+                                world.move_hero(hero=world.my_heroes[0], direction=e[0])
+                                uuu = 1
+            # if hhh is False and uuu == 0 and bb == 0 and l != 0 and D == 0:
+            #     i = 0
+            #     j = 0
+            #     good4 = []
+            #     good1 = []
+            #     good2 = []
+            #     good3 = []
+            #     uuu = 0
+            #     bb = 0
+            #     for cel in G:
+            #         j = 0
+            #         if OPCOL[0] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[0]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[0] == 0:
+            #             j = j + 1
+            #
+            #         if OPCOL[1] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[1]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[1] == 0:
+            #             j = j + 1
+            #         if OPCOL[2] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[2]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[2] == 0:
+            #             j = j + 1
+            #         if OPCOL[3] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[3]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[3] == 0:
+            #             j = j + 1
+            #         if j == 4:
+            #             good4.append(cel)
+            #
+            #         elif j == 3:
+            #             good3.append(cel)
+            #
+            #         elif j == 2:
+            #             good2.append(cel)
+            #
+            #         elif j == 1:
+            #             good1.append(cel)
+            #     if len(good4) != 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good4:
+            #             if gd == CEL[0]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[0], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         for fff in ff:
+            #             dg = world.get_path_move_directions(start_cell=CEL[0], end_cell=fff)
+            #             B.append(len(dg))
+            #         if len(B) > 0:
+            #             Y = B.index(min(B))
+            #             if (B[Y] + FAZ - 1) < 7:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[0], end_cell=ff[Y])
+            #                 if len(dg) > 0:
+            #                     world.move_hero(hero=world.my_heroes[0], direction=dg[0])
+            #                     uuu = 1
+            #
+            #     elif uuu == 0 and bb == 0 and len(good3) > 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good3:
+            #             if gd == CEL[0]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[0], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         for fff in ff:
+            #             dg = world.get_path_move_directions(start_cell=CEL[0], end_cell=fff)
+            #             B.append(len(dg))
+            #         if len(B) > 0:
+            #             Y = B.index(min(B))
+            #             if (B[Y] + FAZ - 1) < 7:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[0], end_cell=ff[Y])
+            #                 if len(dg) > 0:
+            #                     world.move_hero(hero=world.my_heroes[0], direction=dg[0])
+            #                     uuu = 1
+            #
+            #     elif uuu == 0 and bb == 0 and len(good2) > 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good2:
+            #             if gd == CEL[0]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[0], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         for fff in ff:
+            #             dg = world.get_path_move_directions(start_cell=CEL[0], end_cell=fff)
+            #             B.append(len(dg))
+            #         if len(B) > 0:
+            #             Y = B.index(min(B))
+            #             if (B[Y] + FAZ - 1) < 7:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[0], end_cell=ff[Y])
+            #                 if len(dg) > 0:
+            #                     world.move_hero(hero=world.my_heroes[0], direction=dg[0])
+            #                     uuu = 1
+            #
+            #     elif uuu == 0 and bb == 0 and len(good1) > 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good1:
+            #             if gd == CEL[0]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[0], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         for fff in ff:
+            #             dg = world.get_path_move_directions(start_cell=CEL[0], end_cell=fff)
+            #             B.append(len(dg))
+            #         if len(B) > 0:
+            #             Y = B.index(min(B))
+            #             if (B[Y] + FAZ - 1) < 7:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[0], end_cell=ff[Y])
+            #                 if len(dg) > 0:
+            #                     world.move_hero(hero=world.my_heroes[0], direction=dg[0])
+            #                     uuu = 1
+            if uuu == 0 and bb == 0 and D == 0 and uuuu==0 and world.my_heroes[0].current_hp > 0 and l==0:
+                if len(DO) > 0:
+                    world.move_hero(hero=world.my_heroes[0], direction=DO[0])
+                    uuu = 1
+            D = 0
+            bb = 0
+            uuu = 0
+            uuuu = 0
+            if h2 is True and uuu == 0 and l2 != 0 and D == 0 and world.my_heroes[2].current_hp > 0:
+                i = 0
+                j = 0
+                good4 = []
+                good1 = []
+                good2 = []
+                good3 = []
+                uuu = 0
+                bb = 0
+                for cel in M:
+                    j = 0
+                    if OPCOL[0] != 0:
+                        if world.manhattan_distance(cel, OPCEL[0]) < 3:
+                            j = j + 1
+                    if OPCOL[1] != 0:
+                        if world.manhattan_distance(cel, OPCEL[1]) < 3:
+                            j = j + 1
+                    if OPCOL[2] != 0:
+                        if world.manhattan_distance(cel, OPCEL[2]) < 3:
+                            j = j + 1
+                    if OPCOL[3] != 0:
+                        if world.manhattan_distance(cel, OPCEL[3]) < 3:
+                            j = j + 1
+                    if j == 4:
+                        good4.append(cel)
+
+                    elif j == 3:
+                        good3.append(cel)
+
+                    elif j == 2:
+                        good2.append(cel)
+
+                    elif j == 1:
+                        good1.append(cel)
+                if len(good4) != 0:
+                    ff = []
+                    B = []
+                    for gd in good4:
+                        if world.manhattan_distance(CEL[2], gd) < 6:
+                            bb = 1
+                            break
+                        else:
+                            for cel in M:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    ff.append(cel)
+                    if bb == 0 and uuu == 0:
+                        for fff in ff:
+                            dg = get_path_move_directions(start_cell=CEL[2], end_cell=fff , world=world)
+                            B.append(len(dg))
+                        if len(B) > 0:
+                            Y = B.index(min(B))
+                            if (B[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[2], end_cell=ff[Y] , world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[2], direction=dg[0])
+                                    uuu = 1
+
+                elif uuu == 0 and bb == 0 and len(good3) > 0:
+                    ff = []
+                    B = []
+                    for gd in good3:
+                        if world.manhattan_distance(CEL[2], gd) < 6:
+                            bb = 1
+                            break
+                        else:
+                            for cel in M:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    ff.append(cel)
+                    if bb == 0 and uuu == 0:
+                        for fff in ff:
+                            dg = get_path_move_directions(start_cell=CEL[2], end_cell=fff , world=world)
+                            B.append(len(dg))
+                        if len(B) > 0:
+                            Y = B.index(min(B))
+                            if (B[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[2], end_cell=ff[Y] , world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[2], direction=dg[0])
+                                    uuu = 1
+
+
+                elif uuu == 0 and bb == 0 and len(good2) > 0:
+                    fff2 = []
+                    BB2 = []
+                    for gd in good2:
+                        if world.manhattan_distance(CEL[2], gd) < 6:
+                            bb = 1
+                            break
+                        else:
+                            for cel in M:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    fff2.append(cel)
+                    if bb == 0 and uuu == 0:
+                        for fff in fff2:
+                            dg = get_path_move_directions(start_cell=CEL[2], end_cell=fff , world=world)
+                            BB2.append(len(dg))
+                        if len(BB2) > 0:
+                            Y = BB2.index(min(BB2))
+                            if (BB2[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[2], end_cell=fff2[Y] , world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[2], direction=dg[0])
+                                    uuu = 1
+                elif uuu == 0 and bb == 0 and len(good1) > 0:
+                    fff1 = []
+                    BB1 = []
+                    for gd in good1:
+                        if world.manhattan_distance(CEL[2], gd) < 6:
+                            bb = 1
+                            break
+                        else:
+                            for cel in M:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    fff1.append(cel)
+                    if bb == 0 and uuu == 0:
+                        for fff in fff1:
+                            dg = get_path_move_directions(start_cell=CEL[2], end_cell=fff , world=world)
+                            BB1.append(len(dg))
+                        if len(BB1) > 0:
+                            Y = BB1.index(min(BB1))
+                            if (BB1[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[2], end_cell=fff1[Y] , world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[2], direction=dg[0])
+                                    uuu = 1
+            # if hhh2 is True and  bb == 0 and uuuu==0:
+            #     uuuu = 0
+            #     if OPCOL[0] != 0 and uuuu == 0:
+            #         if world.opp_heroes[0].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[0].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[2], OPCEL[0]) < 8:
+            #                     for cel in M:
+            #                         if world.manhattan_distance(start_cell=CEL[2], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[1] and cel != CEL[3] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            #     if OPCOL[1] != 0 and uuuu == 0:
+            #         if world.opp_heroes[1].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[1].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[2], OPCEL[1]) < 8:
+            #                     for cel in M:
+            #                         if world.manhattan_distance(start_cell=CEL[2], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[1] and cel != CEL[3] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            #     if OPCOL[2] != 0 and uuuu == 0:
+            #         if world.opp_heroes[2].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[2].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[2], OPCEL[2]) < 8:
+            #                     for cel in M:
+            #                         if world.manhattan_distance(start_cell=CEL[2], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[1] and cel != CEL[3] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            #     if OPCOL[3] != 0 and uuuu == 0:
+            #         if world.opp_heroes[3].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[3].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[2], OPCEL[3]) < 8:
+            #                     for cel in M:
+            #                         if world.manhattan_distance(start_cell=CEL[2], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[1] and cel != CEL[3] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            if hh2 is True and uuu == 0 and bb == 0 and l2 != 0 and D == 0 and uuuu==0 and hhh2 is False and h2 is False and world.my_heroes[2].current_hp > 0:
+                Q = []
+                for cel in M:
+                    K = 0
+                    if OPCOL[0] != 0:
+                        if world.get_impact_cell(ability=world.my_heroes[2].get_ability(fa), start_cell=cel,target_cell=OPCEL[0]) == OPCEL[0]:
+                            Q.append(cel)
+                            K = 1
+                    if OPCOL[1] != 0 and K == 0:
+                        if world.get_impact_cell(ability=world.my_heroes[2].get_ability(fa), start_cell=cel,target_cell=OPCEL[1]) == OPCEL[1]:
+                            Q.append(cel)
+                            K = 1
+                    if OPCOL[2] != 0 and K == 0:
+                        if world.get_impact_cell(ability=world.my_heroes[2].get_ability(fa), start_cell=cel,target_cell=OPCEL[2]) == OPCEL[2]:
+                            Q.append(cel)
+                            K = 1
+                    if OPCOL[3] != 0 and K == 0:
+                        if world.get_impact_cell(ability=world.my_heroes[2].get_ability(fa), start_cell=cel,target_cell=OPCEL[3]) == OPCEL[3]:
+                            Q.append(cel)
+                            K = 1
+                i = 0
+                bbbb = []
+                bbbb.clear()
+                D = 0
+                if len(Q) > 0:
+                    for q in Q:
+                        if q == CEL[2]:
+                            D = 1
+                            break
+                        else:
+                            e = get_path_move_directions(start_cell=CEL[2], end_cell=q , world=world)
+                            s = len(e)
+                            bbbb.append(s)
+                    if len(bbbb) > 0:
+                        a = bbbb.index(min(bbbb))
+                        if D == 0:
+                            e = get_path_move_directions(start_cell=CEL[2], end_cell=Q[a] , world=world)
+                            if len(e) > 0 and (len(e) + FAZ - 1) < 7:
+                                world.move_hero(hero=world.my_heroes[2], direction=e[0])
+                                uuu = 1
+            # if hhh2 is False and uuu == 0 and bb == 0 and l2 != 0 and D == 0:
+            #     i = 0
+            #     j = 0
+            #     good4 = []
+            #     good1 = []
+            #     good2 = []
+            #     good3 = []
+            #     uuu = 0
+            #     bb = 0
+            #     for cel in M:
+            #         j = 0
+            #         if OPCOL[0] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[0]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[0] == 0:
+            #             j = j + 1
+            #         if OPCOL[1] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[1]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[1] == 0:
+            #             j = j + 1
+            #         if OPCOL[2] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[2]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[2] == 0:
+            #             j = j + 1
+            #         if OPCOL[3] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[3]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[3] == 0:
+            #             j = j + 1
+            #         if j == 4:
+            #             good4.append(cel)
+            #
+            #         elif j == 3:
+            #             good3.append(cel)
+            #
+            #         elif j == 2:
+            #             good2.append(cel)
+            #
+            #         elif j == 1:
+            #             good1.append(cel)
+            #     if len(good4) != 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good4:
+            #             if gd == CEL[2]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[2], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         if bb == 0 and uuu == 0:
+            #             for fff in ff:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[2], end_cell=fff)
+            #                 B.append(len(dg))
+            #             if len(B) > 0:
+            #                 Y = B.index(min(B))
+            #                 if (B[Y] + FAZ - 1) < 7:
+            #                     dg = world.get_path_move_directions(start_cell=CEL[2], end_cell=ff[Y])
+            #                     if len(dg) > 0:
+            #                         world.move_hero(hero=world.my_heroes[2], direction=dg[0])
+            #                         uuu = 1
+            #     elif uuu == 0 and bb == 0 and len(good3) > 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good3:
+            #             if gd == CEL[2]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[2], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         if bb == 0 and uuu == 0:
+            #             for fff in ff:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[2], end_cell=fff)
+            #                 B.append(len(dg))
+            #             if len(B) > 0:
+            #                 Y = B.index(min(B))
+            #                 if (B[Y] + FAZ - 1) < 7:
+            #                     dg = world.get_path_move_directions(start_cell=CEL[2], end_cell=ff[Y])
+            #                     if len(dg) > 0:
+            #                         world.move_hero(hero=world.my_heroes[2], direction=dg[0])
+            #                         uuu = 1
+            #     elif uuu == 0 and bb == 0 and len(good2) > 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good2:
+            #             if gd == CEL[2]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[2], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         if bb == 0 and uuu == 0:
+            #             for fff in ff:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[2], end_cell=fff)
+            #                 B.append(len(dg))
+            #             if len(B) > 0:
+            #                 Y = B.index(min(B))
+            #                 if (B[Y] + FAZ - 1) < 7:
+            #                     dg = world.get_path_move_directions(start_cell=CEL[2], end_cell=ff[Y])
+            #                     if len(dg) > 0:
+            #                         world.move_hero(hero=world.my_heroes[2], direction=dg[0])
+            #                         uuu = 1
+            #     elif uuu == 0 and bb == 0 and len(good1) > 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good1:
+            #             if gd == CEL[2]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[2], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         if bb == 0 and uuu == 0:
+            #             for fff in ff:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[2], end_cell=fff)
+            #                 B.append(len(dg))
+            #             if len(B) > 0:
+            #                 Y = B.index(min(B))
+            #                 if (B[Y] + FAZ - 1) < 7:
+            #                     dg = world.get_path_move_directions(start_cell=CEL[2], end_cell=ff[Y])
+            #                     if len(dg) > 0:
+            #                         world.move_hero(hero=world.my_heroes[2], direction=dg[0])
+            #                         uuu = 1
+            if uuu == 0 and bb == 0 and D == 0 and uuuu==0 and world.my_heroes[2].current_hp > 0 and l2==0:
+                if len(DO2) > 0:
+                    world.move_hero(hero=world.my_heroes[2], direction=DO2[0])
+                    uuu = 1
+            bb = 0
+            uuu = 0
+            D = 0
+            if h3 is True and uuu == 0 and l3 != 0 and D == 0 and world.my_heroes[3].current_hp > 0 :
+                i = 0
+                j = 0
+                good4 = []
+                good1 = []
+                good2 = []
+                good3 = []
+                uuu = 0
+                bb = 0
+                for cel in N:
+                    j = 0
+                    if OPCOL[0] != 0:
+                        if world.manhattan_distance(cel, OPCEL[0]) < 3:
+                            j = j + 1
+                    if OPCOL[1] != 0:
+                        if world.manhattan_distance(cel, OPCEL[1]) < 3:
+                            j = j + 1
+                    if OPCOL[2] != 0:
+                        if world.manhattan_distance(cel, OPCEL[2]) < 3:
+                            j = j + 1
+                    if OPCOL[3] != 0:
+                        if world.manhattan_distance(cel, OPCEL[3]) < 3:
+                            j = j + 1
+                    if j == 4:
+                        good4.append(cel)
+
+                    elif j == 3:
+                        good3.append(cel)
+
+                    elif j == 2:
+                        good2.append(cel)
+
+                    elif j == 1:
+                        good1.append(cel)
+                if len(good4) != 0:
+                    ff = []
+                    B = []
+                    for gd in good4:
+                        if world.manhattan_distance(CEL[3], gd) < 6:
+                            bb = 1
+                            break
+                        else:
+                            for cel in N:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    ff.append(cel)
+                    if bb == 0 and uuu == 0:
+                        for fff in ff:
+                            dg = get_path_move_directions(start_cell=CEL[3], end_cell=fff , world=world)
+                            B.append(len(dg))
+                        if len(B) > 0:
+                            Y = B.index(min(B))
+                            if (B[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[3], end_cell=ff[Y] , world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[3], direction=dg[0])
+                                    uuu = 1
+
+                elif uuu == 0 and bb == 0 and len(good3) > 0:
+                    ff = []
+                    B = []
+                    for gd in good3:
+                        if world.manhattan_distance(CEL[3], gd) < 6:
+                            bb = 1
+                            break
+                        else:
+                            for cel in N:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    ff.append(cel)
+                    if bb == 0 and uuu == 0:
+                        for fff in ff:
+                            dg = get_path_move_directions(start_cell=CEL[3], end_cell=fff , world=world)
+                            B.append(len(dg))
+                        if len(B) > 0:
+                            Y = B.index(min(B))
+                            if (B[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[3], end_cell=ff[Y] , world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[3], direction=dg[0])
+                                    uuu = 1
+
+                elif uuu == 0 and bb == 0 and len(good2) > 0:
+                    fff2 = []
+                    BB2 = []
+                    for gd in good2:
+                        if world.manhattan_distance(CEL[3], gd) < 6:
+                            bb = 1
+                            break
+                        else:
+                            for cel in N:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    fff2.append(cel)
+                    if bb == 0 and uuu == 0:
+                        for fff in fff2:
+                            dg = get_path_move_directions(start_cell=CEL[3], end_cell=fff ,world=world)
+                            BB2.append(len(dg))
+                        if len(BB2) > 0:
+                            Y = BB2.index(min(BB2))
+                            if (BB2[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[3], end_cell=fff2[Y] , world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[3], direction=dg[0])
+                                    uuu = 1
+
+                elif uuu == 0 and bb == 0 and len(good1) > 0:
+                    fffW = []
+                    BBW = []
+                    for gd in good1:
+                        if world.manhattan_distance(CEL[3], gd) < 6:
+                            bb = 1
+                            break
+                        else:
+                            for cel in N:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    fffW.append(cel)
+                    if bb == 0 and uuu == 0:
+                        for fffff in fffW:
+                            dg = get_path_move_directions(start_cell=CEL[3], end_cell=fffff ,world=world)
+                            BBW.append(len(dg))
+                        if len(BBW) > 0:
+                            Y = BBW.index(min(BBW))
+                            if (BBW[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[3], end_cell=fffW[Y] , world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[3], direction=dg[0])
+                                    uuu = 1
+            # if hhh3 is True and bb == 0 and uuuu==0:
+            #     uuuu = 0
+            #     if OPCOL[0] != 0 and uuuu == 0:
+            #         if world.opp_heroes[0].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[0].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[3], OPCEL[0]) < 8:
+            #                     for cel in N:
+            #                         if world.manhattan_distance(start_cell=CEL[3], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[1] and cel != CEL[2] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            #     if OPCOL[1] != 0 and uuuu == 0:
+            #         if world.opp_heroes[1].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[1].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[3], OPCEL[1]) < 8:
+            #                     for cel in N:
+            #                         if world.manhattan_distance(start_cell=CEL[3], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[1] and cel != CEL[2] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            #     if OPCOL[2] != 0 and uuuu == 0:
+            #         if world.opp_heroes[2].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[2].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[3], OPCEL[2]) < 8:
+            #                     for cel in N:
+            #                         if world.manhattan_distance(start_cell=CEL[3], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[1] and cel != CEL[2] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            #     if OPCOL[3] != 0 and uuuu == 0:
+            #         if world.opp_heroes[3].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[3].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[3], OPCEL[3]) < 8:
+            #                     for cel in N:
+            #                         if world.manhattan_distance(start_cell=CEL[3], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[1] and cel != CEL[2] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            if hh3 is True and uuu == 0 and bb == 0 and l3 != 0 and D == 0 and uuuu==0 and hhh3 is False and h3 is False and world.my_heroes[3].current_hp > 0:
+                Q = []
+                for cel in N:
+                    K = 0
+                    if OPCOL[0] != 0:
+                        if world.get_impact_cell(ability=world.my_heroes[3].get_ability(fa), start_cell=cel,target_cell=OPCEL[0]) == OPCEL[0]:
+                            Q.append(cel)
+                            K = 1
+                    if OPCOL[1] != 0 and K == 0:
+                        if world.get_impact_cell(ability=world.my_heroes[3].get_ability(fa), start_cell=cel,target_cell=OPCEL[1]) == OPCEL[1]:
+                            Q.append(cel)
+                            K = 1
+                    if OPCOL[2] != 0 and K == 0:
+                        if world.get_impact_cell(ability=world.my_heroes[3].get_ability(fa), start_cell=cel,target_cell=OPCEL[2]) == OPCEL[2]:
+                            Q.append(cel)
+                            K = 1
+                    if OPCOL[3] != 0 and K == 0:
+                        if world.get_impact_cell(ability=world.my_heroes[3].get_ability(fa), start_cell=cel,target_cell=OPCEL[3]) == OPCEL[3]:
+                            Q.append(cel)
+                            K = 1
+                i = 0
+                bbbb = []
+                bbbb.clear()
+                D = 0
+                if len(Q) > 0:
+                    for q in Q:
+                        if q == CEL[3]:
+                            D = 1
+                            break
+                        else:
+                            e = get_path_move_directions(start_cell=CEL[3], end_cell=q ,world=world)
+                            s = len(e)
+                            bbbb.append(s)
+                    if len(bbbb) > 0:
+                        a = bbbb.index(min(bbbb))
+                        if D == 0:
+                            e = get_path_move_directions(start_cell=CEL[3], end_cell=Q[a] , world=world)
+                            if len(e) > 0 and (len(e) + FAZ - 1) < 7:
+                                world.move_hero(hero=world.my_heroes[3], direction=e[0])
+                                uuu = 1
+            # if hhh3 is False and uuu == 0 and bb == 0 and l3 != 0 and D == 0:
+            #     i = 0
+            #     j = 0
+            #     good4 = []
+            #     good1 = []
+            #     good2 = []
+            #     good3 = []
+            #     uuu = 0
+            #     bb = 0
+            #     for cel in N:
+            #         j = 0
+            #         if OPCOL[0] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[0]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[0] == 0:
+            #             j = j + 1
+            #         if OPCOL[1] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[1]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[1] == 0:
+            #             j = j + 1
+            #         if OPCOL[2] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[2]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[2] == 0:
+            #             j = j + 1
+            #         if OPCOL[3] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[3]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[3] == 0:
+            #             j = j + 1
+            #         if j == 4:
+            #             good4.append(cel)
+            #
+            #         elif j == 3:
+            #             good3.append(cel)
+            #
+            #         elif j == 2:
+            #             good2.append(cel)
+            #
+            #         elif j == 1:
+            #             good1.append(cel)
+            #     if len(good4) != 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good4:
+            #             if gd == CEL[3]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[3], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         if bb == 0 and uuu == 0:
+            #             for fff in ff:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[3], end_cell=fff)
+            #                 B.append(len(dg))
+            #             if len(B) > 0:
+            #                 Y = B.index(min(B))
+            #                 if (B[Y] + FAZ - 1) < 7:
+            #                     dg = world.get_path_move_directions(start_cell=CEL[3], end_cell=ff[Y])
+            #                     if len(dg) > 0:
+            #                         world.move_hero(hero=world.my_heroes[3], direction=dg[0])
+            #                         uuu = 1
+            #
+            #     elif uuu == 0 and bb == 0 and len(good3) > 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good3:
+            #             if gd == CEL[3]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[3], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         if bb == 0 and uuu == 0:
+            #             for fff in ff:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[3], end_cell=fff)
+            #                 B.append(len(dg))
+            #             if len(B) > 0:
+            #                 Y = B.index(min(B))
+            #                 if (B[Y] + FAZ - 1) < 7:
+            #                     dg = world.get_path_move_directions(start_cell=CEL[3], end_cell=ff[Y])
+            #                     if len(dg) > 0:
+            #                         world.move_hero(hero=world.my_heroes[3], direction=dg[0])
+            #                         uuu = 1
+            #
+            #     elif uuu == 0 and bb == 0 and len(good2) > 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good2:
+            #             if gd == CEL[3]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[3], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         if bb == 0 and uuu == 0:
+            #             for fff in ff:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[3], end_cell=fff)
+            #                 B.append(len(dg))
+            #             if len(B) > 0:
+            #                 Y = B.index(min(B))
+            #                 if (B[Y] + FAZ - 1) < 7:
+            #                     dg = world.get_path_move_directions(start_cell=CEL[3], end_cell=ff[Y])
+            #                     if len(dg) > 0:
+            #                         world.move_hero(hero=world.my_heroes[3], direction=dg[0])
+            #                         uuu = 1
+            #
+            #     elif uuu == 0 and bb == 0 and len(good1) > 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good1:
+            #             if gd == CEL[3]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[3], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         if bb == 0 and uuu == 0:
+            #             for fff in ff:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[3], end_cell=fff)
+            #                 B.append(len(dg))
+            #             if len(B) > 0:
+            #                 Y = B.index(min(B))
+            #                 if (B[Y] + FAZ - 1) < 7:
+            #                     dg = world.get_path_move_directions(start_cell=CEL[3], end_cell=ff[Y])
+            #                     if len(dg) > 0:
+            #                         world.move_hero(hero=world.my_heroes[3], direction=dg[0])
+            #                         uuu = 1
+            if uuu == 0 and bb == 0 and D == 0 and uuuu==0 and world.my_heroes[3].current_hp > 0 and l3==0:
+                if len(DO3) > 0:
+                    world.move_hero(hero=world.my_heroes[3], direction=DO3[0])
+                    uuu = 1
+        else:
+            bb = 0
+            uuu = 0
+            D = 0
+            uuuu=0
+            if h1 is True and uuu == 0 and l1 != 0 and D == 0 and FAZ>5 and world.my_heroes[1].current_hp > 0:
+                good4 = []
+                good1 = []
+                good2 = []
+                good3 = []
+                uuu = 0
+                bb = 0
+                for cel in H:
+                    j = 0
+                    if OPCOL[0] != 0:
+                        if world.manhattan_distance(start_cell=cel, end_cell=OPCEL[0]) < 3:
+                            j = j + 1
+                    if OPCOL[1] != 0:
+                        if world.manhattan_distance(start_cell=cel, end_cell=OPCEL[1]) < 3:
+                            j = j + 1
+                    if OPCOL[2] != 0:
+                        if world.manhattan_distance(start_cell=cel, end_cell=OPCEL[2]) < 3:
+                            j = j + 1
+                    if OPCOL[3] != 0:
+                        if world.manhattan_distance(start_cell=cel, end_cell=OPCEL[3]) < 3:
+                            j = j + 1
+                    if j == 4:
+                        good4.append(cel)
+
+                    elif j == 3:
+                        good3.append(cel)
+
+                    elif j == 2:
+                        good2.append(cel)
+
+                    elif j == 1:
+                        good1.append(cel)
+                if len(good4) > 0:
+                    ff = []
+                    B = []
+                    for gd in good4:
+                        ff = []
+                        B = []
+                        if world.manhattan_distance(start_cell=CEL[1], end_cell=gd) < 6:
+                            bb = 1
+                            break
+                        elif uuu == 0 and bb == 0:
+                            ff = []
+                            B = []
+                            for cel in H:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    ff.append(cel)
+                    if bb == 0:
+                        for fff in ff:
+                            dg = get_path_move_directions(start_cell=CEL[1], end_cell=fff, world=world)
+                            B.append(len(dg))
+                        if len(B) > 0:
+                            Y = B.index(min(B))
+                            if (B[Y] + FAZ - 1) < 7 and bb == 0:
+                                dg = get_path_move_directions(start_cell=CEL[1], end_cell=ff[Y], world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[1], direction=dg[0])
+                                    uuu = 1
+                elif uuu == 0 and bb == 0 and len(good3) > 0:
+                    ff = []
+                    B = []
+                    for gd in good3:
+                        ff = []
+                        B = []
+                        if world.manhattan_distance(CEL[1], gd) < 6:
+                            bb = 1
+                            break
+                        elif uuu == 0 and bb == 0:
+                            ff = []
+                            B = []
+                            for cel in H:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    ff.append(cel)
+                    if bb == 0:
+                        for fff in ff:
+                            dg = get_path_move_directions(start_cell=CEL[1], end_cell=fff, world=world)
+                            B.append(len(dg))
+                        if len(B) > 0:
+                            Y = B.index(min(B))
+                            if (B[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[1], end_cell=ff[Y], world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[1], direction=dg[0])
+                                    uuu = 1
+                elif uuu == 0 and bb == 0 and len(good2) > 0:
+                    fff2 = []
+                    BB2 = []
+                    for gd in good2:
+                        fff2 = []
+                        BB2 = []
+                        if world.manhattan_distance(CEL[1], gd) < 6:
+                            bb = 1
+                            break
+                        elif uuu == 0 and bb == 0:
+                            fff2 = []
+                            BB2 = []
+                            for cel in H:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    fff2.append(cel)
+                    if bb == 0:
+                        for fff in fff2:
+                            dg = get_path_move_directions(start_cell=CEL[1], end_cell=fff, world=world)
+                            BB2.append(len(dg))
+                        if len(BB2) > 0:
+                            Y = BB2.index(min(BB2))
+                            if (BB2[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[1], end_cell=fff2[Y], world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[1], direction=dg[0])
+                                    uuu = 1
+                elif uuu == 0 and bb == 0 and len(good1) > 0:
+                    fff1 = []
+                    BB1 = []
+                    for gd in good1:
+                        fff1 = []
+                        BB1 = []
+                        if world.manhattan_distance(CEL[1], gd) < 6:
+                            bb = 1
+                            break
+                        elif uuu == 0 and bb == 0:
+                            fff1 = []
+                            BB1 = []
+                            for cel in H:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    fff1.append(cel)
+                    if bb == 0:
+                        for fff in fff1:
+                            dg = get_path_move_directions(start_cell=CEL[1], end_cell=fff, world=world)
+                            BB1.append(len(dg))
+                        if len(BB1) > 0:
+                            Y = BB1.index(min(BB1))
+                            if (BB1[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[1], end_cell=fff1[Y], world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[1], direction=dg[0])
+                                    uuu = 1
+            # if hhh1 is True and  bb == 0 and uuuu==0:
+            #     uuuu = 0
+            #     if OPCOL[0] != 0 and uuuu == 0:
+            #         if world.opp_heroes[0].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[0].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[1], OPCEL[0]) < 8:
+            #                     for cel in H:
+            #                         if world.manhattan_distance(start_cell=CEL[1], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[2] and cel != CEL[3] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            #     if OPCOL[1] != 0 and uuuu == 0:
+            #         if world.opp_heroes[1].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[1].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[1], OPCEL[1]) < 8:
+            #                     for cel in H:
+            #                         if world.manhattan_distance(start_cell=CEL[1], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[2] and cel != CEL[3] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            #     if OPCOL[2] != 0 and uuuu == 0:
+            #         if world.opp_heroes[2].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[2].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[1], OPCEL[2]) < 8:
+            #                     for cel in H:
+            #                         if world.manhattan_distance(start_cell=CEL[1], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[2] and cel != CEL[3] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            #     if OPCOL[3] != 0 and uuuu == 0:
+            #         if world.opp_heroes[3].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[3].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[1], OPCEL[3]) < 8:
+            #                     for cel in H:
+            #                         if world.manhattan_distance(start_cell=CEL[1], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[2] and cel != CEL[3] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            if hh1 is True and uuu == 0 and bb == 0 and l1 != 0 and D == 0 and h1 is False and FAZ>4 and hhh1 is False and uuuu==0 and world.my_heroes[1].current_hp > 0:
+                Q = []
+                for cel in H:
+                    K = 0
+                    if OPCOL[0] != 0:
+                        if world.get_impact_cell(ability=world.my_heroes[1].get_ability(fa), start_cell=cel,target_cell=OPCEL[0]) == OPCEL[0]:
+                            Q.append(cel)
+                            K = 1
+                    if OPCOL[1] != 0 and K == 0:
+                        if world.get_impact_cell(ability=world.my_heroes[1].get_ability(fa), start_cell=cel,target_cell=OPCEL[1]) == OPCEL[1]:
+                            Q.append(cel)
+                            K = 1
+                    if OPCOL[2] != 0 and K == 0:
+                        if world.get_impact_cell(ability=world.my_heroes[1].get_ability(fa), start_cell=cel,target_cell=OPCEL[2]) == OPCEL[2]:
+                            Q.append(cel)
+                            K = 1
+                    if OPCOL[3] != 0 and K == 0:
+                        if world.get_impact_cell(ability=world.my_heroes[1].get_ability(fa), start_cell=cel,target_cell=OPCEL[3]) == OPCEL[3]:
+                            Q.append(cel)
+                            K = 1
+                i = 0
+                bbbb = []
+                ww = 1000
+                bbbb.clear()
+                D = 0
+                if len(Q) > 0:
+                    for q in Q:
+                        if q == CEL[1]:
+                            D = 1
+                            break
+                        else:
+                            e = get_path_move_directions(start_cell=CEL[1], end_cell=q, world=world)
+                            s = len(e)
+                            bbbb.append(s)
+                    if len(bbbb) > 0:
+                        a = bbbb.index(min(bbbb))
+                        if D == 0:
+                            e = get_path_move_directions(start_cell=CEL[1], end_cell=Q[a], world=world)
+                            if len(e) > 0 and (len(e) + FAZ - 1) < 7:
+                                world.move_hero(hero=world.my_heroes[1], direction=e[0])
+                                uuu = 1
+            # if hhh1 is False and uuu == 0 and bb == 0 and l1 != 0 and D == 0 and h1 is False and hh1 is False:
+            #     i = 0
+            #     j = 0
+            #     good4 = []
+            #     good1 = []
+            #     good2 = []
+            #     good3 = []
+            #     good = []
+            #     uuu = 0
+            #     bb = 0
+            #     for cel in H:
+            #         j = 0
+            #         if OPCOL[0] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[0]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[0] == 0:
+            #             j = j + 1
+            #         if OPCOL[1] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[1]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[1] == 0:
+            #             j = j + 1
+            #         if OPCOL[2] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[2]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[2] == 0:
+            #             j = j + 1
+            #         if OPCOL[3] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[3]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[3] == 0:
+            #             j = j + 1
+            #         if j == 4:
+            #             good4.append(cel)
+            #
+            #         elif j == 3:
+            #             good3.append(cel)
+            #
+            #         elif j == 2:
+            #             good2.append(cel)
+            #
+            #         elif j == 1:
+            #             good1.append(cel)
+            #     if len(good4) != 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good4:
+            #             if gd == CEL[1]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[1], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         if bb == 0 and len(ff) > 0:
+            #             for fff in ff:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[1], end_cell=fff)
+            #                 B.append(len(dg))
+            #             if len(B) > 0:
+            #                 Y = B.index(min(B))
+            #                 if (B[Y] + FAZ - 1) < 7:
+            #                     dg = world.get_path_move_directions(start_cell=CEL[1], end_cell=ff[Y])
+            #                     if len(dg) > 0:
+            #                         world.move_hero(hero=world.my_heroes[1], direction=dg[0])
+            #                         uuu = 1
+            #
+            #
+            #     elif uuu == 0 and bb == 0 and len(good3) > 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good3:
+            #             if gd == CEL[1]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[1], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         if bb == 0 and len(ff) > 0:
+            #             for fff in ff:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[1], end_cell=fff)
+            #                 B.append(len(dg))
+            #             if len(B) > 0:
+            #                 Y = B.index(min(B))
+            #                 if (B[Y] + FAZ - 1) < 7:
+            #                     dg = world.get_path_move_directions(start_cell=CEL[1], end_cell=ff[Y])
+            #                     if len(dg) > 0:
+            #                         world.move_hero(hero=world.my_heroes[1], direction=dg[0])
+            #                         uuu = 1
+            #
+            #
+            #     elif uuu == 0 and bb == 0 and len(good2) > 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good2:
+            #             if gd == CEL[1]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[1], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         if bb == 0 and len(ff) > 0:
+            #             for fff in ff:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[1], end_cell=fff)
+            #                 B.append(len(dg))
+            #             if len(B) > 0:
+            #                 Y = B.index(min(B))
+            #                 if (B[Y] + FAZ - 1) < 7:
+            #                     dg = world.get_path_move_directions(start_cell=CEL[1], end_cell=ff[Y])
+            #                     if len(dg) > 0:
+            #                         world.move_hero(hero=world.my_heroes[1], direction=dg[0])
+            #                         uuu = 1
+            #
+            #
+            #     elif uuu == 0 and bb == 0 and len(good1) > 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good1:
+            #             if gd == CEL[1]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[1], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         if bb == 0 and len(ff) > 0:
+            #             for fff in ff:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[1], end_cell=fff)
+            #                 B.append(len(dg))
+            #             if len(B) > 0:
+            #                 Y = B.index(min(B))
+            #                 if (B[Y] + FAZ - 1) < 7:
+            #                     dg = world.get_path_move_directions(start_cell=CEL[1], end_cell=ff[Y])
+            #                     if len(dg) > 0:
+            #                         world.move_hero(hero=world.my_heroes[1], direction=dg[0])
+            #                         uuu = 1
+            if uuu == 0 and bb == 0 and D == 0 and l1 ==0 and uuuu==0 and world.my_heroes[1].current_hp > 0 and l1==0:
+                if len(DO1) > 0:
+                    world.move_hero(hero=world.my_heroes[1], direction=DO1[0])
+                    uuu = 1
+            uuu = 0
+            bb = 0
+            D = 0
+            if h is True and uuu == 0 and l != 0 and D == 0 and FAZ>5 and world.my_heroes[0].current_hp > 0:
+                i = 0
+                j = 0
+                good4 = []
+                good1 = []
+                good2 = []
+                good3 = []
+                uuu = 0
+                bb = 0
+                for cel in G:
+                    j = 0
+                    if OPCOL[0] != 0:
+                        if world.manhattan_distance(cel, OPCEL[0]) < 3:
+                            j = j + 1
+                    if OPCOL[1] != 0:
+                        if world.manhattan_distance(cel, OPCEL[1]) < 3:
+                            j = j + 1
+                    if OPCOL[2] != 0:
+                        if world.manhattan_distance(cel, OPCEL[2]) < 3:
+                            j = j + 1
+                    if OPCOL[3] != 0:
+                        if world.manhattan_distance(cel, OPCEL[3]) < 3:
+                            j = j + 1
+                    if j == 4:
+                        good4.append(cel)
+
+                    elif j == 3:
+                        good3.append(cel)
+
+                    elif j == 2:
+                        good2.append(cel)
+
+                    elif j == 1:
+                        good1.append(cel)
+                if len(good4) != 0:
+                    ff = []
+                    B = []
+                    for gd in good4:
+                        if world.manhattan_distance(CEL[0], gd) < 6:
+                            bb = 1
+                            break
+                        else:
+                            for cel in G:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    ff.append(cel)
+                    if bb == 0 and uuu == 0:
+                        for fff in ff:
+                            dg = get_path_move_directions(start_cell=CEL[0], end_cell=fff, world=world)
+                            B.append(len(dg))
+                        if len(B) > 0:
+                            Y = B.index(min(B))
+                            if (B[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[0], end_cell=ff[Y], world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[0], direction=dg[0])
+                                    uuu = 1
+
+                elif uuu == 0 and bb == 0 and len(good3) > 0:
+                    ff = []
+                    B = []
+                    for gd in good3:
+                        if world.manhattan_distance(CEL[0], gd) < 6:
+                            bb = 1
+                            break
+                        else:
+                            for cel in G:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    ff.append(cel)
+                    if bb == 0 and uuu == 0:
+                        for fff in ff:
+                            dg = get_path_move_directions(start_cell=CEL[0], end_cell=fff, world=world)
+                            B.append(len(dg))
+                        if len(B) > 0:
+                            Y = B.index(min(B))
+                            if (B[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[0], end_cell=ff[Y], world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[0], direction=dg[0])
+                                    uuu = 1
+                elif uuu == 0 and bb == 0 and len(good2) > 0:
+                    fff2 = []
+                    BB2 = []
+                    for gd in good2:
+                        if world.manhattan_distance(CEL[0], gd) < 6:
+                            bb = 1
+                            break
+                        else:
+                            for cel in G:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    fff2.append(cel)
+                    if bb == 0 and uuu == 0:
+                        for fff in fff2:
+                            dg = get_path_move_directions(start_cell=CEL[0], end_cell=fff, world=world)
+                            BB2.append(len(dg))
+                        if len(BB2) > 0:
+                            Y = BB2.index(min(BB2))
+                            if (BB2[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[0], end_cell=fff2[Y], world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[0], direction=dg[0])
+                                    uuu = 1
+
+
+                elif uuu == 0 and bb == 0 and len(good1) > 0:
+                    fff1 = []
+                    BB1 = []
+                    for gd in good1:
+                        if world.manhattan_distance(CEL[0], gd) < 6:
+                            bb = 1
+                            break
+                        else:
+                            for cel in G:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    fff1.append(cel)
+                    if bb == 0 and uuu == 0:
+                        for fff in fff1:
+                            dg = get_path_move_directions(start_cell=CEL[0], end_cell=fff, world=world)
+                            BB1.append(len(dg))
+                        if len(BB1) > 0:
+                            Y = BB1.index(min(BB1))
+                            if (BB1[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[0], end_cell=fff1[Y], world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[0], direction=dg[0])
+                                    uuu = 1
+            # if hhh is True and bb == 0 and uuuu == 0:
+            #     uuuu = 0
+            #     if OPCOL[0] != 0 and uuuu == 0:
+            #         if world.opp_heroes[0].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[0].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[0], OPCEL[0]) < 8:
+            #                     for cel in G:
+            #                         if world.manhattan_distance(start_cell=CEL[0], end_cell=cel) > 2 and cel != CEL[
+            #                             1] and cel != CEL[2] and cel != CEL[3] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            #     if OPCOL[1] != 0 and uuuu == 0:
+            #         if world.opp_heroes[1].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[1].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[0], OPCEL[1]) < 8:
+            #                     for cel in G:
+            #                         if world.manhattan_distance(start_cell=CEL[0], end_cell=cel) > 2 and cel != CEL[
+            #                             1] and cel != CEL[2] and cel != CEL[3] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            #     if OPCOL[2] != 0 and uuuu == 0:
+            #         if world.opp_heroes[2].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[2].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[0], OPCEL[2]) < 8:
+            #                     for cel in G:
+            #                         if world.manhattan_distance(start_cell=CEL[0], end_cell=cel) > 2 and cel != CEL[
+            #                             1] and cel != CEL[2] and cel != CEL[3] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            #     if OPCOL[3] != 0 and uuuu == 0:
+            #         if world.opp_heroes[3].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[3].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[0], OPCEL[3]) < 8:
+            #                     for cel in G:
+            #                         if world.manhattan_distance(start_cell=CEL[0], end_cell=cel) > 2 and cel != CEL[
+            #                             1] and cel != CEL[2] and cel != CEL[3] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            if hh is True and uuu == 0 and bb == 0 and l != 0 and D == 0 and h is False and FAZ>4 and hhh is False and uuuu==0 and world.my_heroes[0].current_hp > 0:
+                Q = []
+                for cel in G:
+                    K = 0
+                    if OPCOL[0] != 0:
+                        if world.get_impact_cell(ability=world.my_heroes[0].get_ability(fa), start_cell=cel,target_cell=OPCEL[0]) == OPCEL[0]:
+                            Q.append(cel)
+                            K = 1
+                    if OPCOL[1] != 0 and K == 0:
+                        if world.get_impact_cell(ability=world.my_heroes[0].get_ability(fa), start_cell=cel,target_cell=OPCEL[1]) == OPCEL[1]:
+                            Q.append(cel)
+                            K = 1
+                    if OPCOL[2] != 0 and K == 0:
+                        if world.get_impact_cell(ability=world.my_heroes[0].get_ability(fa), start_cell=cel,target_cell=OPCEL[2]) == OPCEL[2]:
+                            Q.append(cel)
+                            K = 1
+                    if OPCOL[3] != 0 and K == 0:
+                        if world.get_impact_cell(ability=world.my_heroes[0].get_ability(fa), start_cell=cel,target_cell=OPCEL[3]) == OPCEL[3]:
+                            Q.append(cel)
+                            K = 1
+                i = 0
+                bbbb = []
+                bbbb.clear()
+                D = 0
+                if len(Q) > 0:
+                    for q in Q:
+                        if q == CEL[0]:
+                            D = 1
+                            break
+                        else:
+                            e = get_path_move_directions(start_cell=CEL[0], end_cell=q, world=world)
+                            s = len(e)
+                            bbbb.append(s)
+                    if len(bbbb) > 0:
+                        a = bbbb.index(min(bbbb))
+                        if D == 0:
+                            e = get_path_move_directions(start_cell=CEL[0], end_cell=Q[a], world=world)
+                            if len(e) > 0 and (len(e) + FAZ - 1) < 7:
+                                world.move_hero(hero=world.my_heroes[0], direction=e[0])
+                                uuu = 1
+            # if hhh is False and uuu == 0 and bb == 0 and l != 0 and D == 0 and h is False and hh is False:
+            #     i = 0
+            #     j = 0
+            #     good4 = []
+            #     good1 = []
+            #     good2 = []
+            #     good3 = []
+            #     uuu = 0
+            #     bb = 0
+            #     for cel in G:
+            #         j = 0
+            #         if OPCOL[0] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[0]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[0] == 0:
+            #             j = j + 1
+            #
+            #         if OPCOL[1] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[1]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[1] == 0:
+            #             j = j + 1
+            #         if OPCOL[2] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[2]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[2] == 0:
+            #             j = j + 1
+            #         if OPCOL[3] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[3]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[3] == 0:
+            #             j = j + 1
+            #         if j == 4:
+            #             good4.append(cel)
+            #
+            #         elif j == 3:
+            #             good3.append(cel)
+            #
+            #         elif j == 2:
+            #             good2.append(cel)
+            #
+            #         elif j == 1:
+            #             good1.append(cel)
+            #     if len(good4) != 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good4:
+            #             if gd == CEL[0]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[0], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         for fff in ff:
+            #             dg = world.get_path_move_directions(start_cell=CEL[0], end_cell=fff)
+            #             B.append(len(dg))
+            #         if len(B) > 0:
+            #             Y = B.index(min(B))
+            #             if (B[Y] + FAZ - 1) < 7:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[0], end_cell=ff[Y])
+            #                 if len(dg) > 0:
+            #                     world.move_hero(hero=world.my_heroes[0], direction=dg[0])
+            #                     uuu = 1
+            #
+            #     elif uuu == 0 and bb == 0 and len(good3) > 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good3:
+            #             if gd == CEL[0]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[0], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         for fff in ff:
+            #             dg = world.get_path_move_directions(start_cell=CEL[0], end_cell=fff)
+            #             B.append(len(dg))
+            #         if len(B) > 0:
+            #             Y = B.index(min(B))
+            #             if (B[Y] + FAZ - 1) < 7:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[0], end_cell=ff[Y])
+            #                 if len(dg) > 0:
+            #                     world.move_hero(hero=world.my_heroes[0], direction=dg[0])
+            #                     uuu = 1
+            #
+            #     elif uuu == 0 and bb == 0 and len(good2) > 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good2:
+            #             if gd == CEL[0]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[0], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         for fff in ff:
+            #             dg = world.get_path_move_directions(start_cell=CEL[0], end_cell=fff)
+            #             B.append(len(dg))
+            #         if len(B) > 0:
+            #             Y = B.index(min(B))
+            #             if (B[Y] + FAZ - 1) < 7:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[0], end_cell=ff[Y])
+            #                 if len(dg) > 0:
+            #                     world.move_hero(hero=world.my_heroes[0], direction=dg[0])
+            #                     uuu = 1
+            #
+            #     elif uuu == 0 and bb == 0 and len(good1) > 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good1:
+            #             if gd == CEL[0]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[0], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         for fff in ff:
+            #             dg = world.get_path_move_directions(start_cell=CEL[0], end_cell=fff)
+            #             B.append(len(dg))
+            #         if len(B) > 0:
+            #             Y = B.index(min(B))
+            #             if (B[Y] + FAZ - 1) < 7:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[0], end_cell=ff[Y])
+            #                 if len(dg) > 0:
+            #                     world.move_hero(hero=world.my_heroes[0], direction=dg[0])
+            #                     uuu = 1
+            if uuu == 0 and bb == 0 and D == 0 and l ==0 and uuuu==0 and world.my_heroes[0].current_hp > 0 and l==0:
+                if len(DO) > 0:
+                    world.move_hero(hero=world.my_heroes[0], direction=DO[0])
+                    uuu = 1
+            D = 0
+            bb = 0
+            uuu = 0
+            if h2 is True and uuu == 0 and l2 != 0 and D == 0 and FAZ>5 and world.my_heroes[2].current_hp > 0:
+                i = 0
+                j = 0
+                good4 = []
+                good1 = []
+                good2 = []
+                good3 = []
+                uuu = 0
+                bb = 0
+                for cel in M:
+                    j = 0
+                    if OPCOL[0] != 0:
+                        if world.manhattan_distance(cel, OPCEL[0]) < 3:
+                            j = j + 1
+                    if OPCOL[1] != 0:
+                        if world.manhattan_distance(cel, OPCEL[1]) < 3:
+                            j = j + 1
+                    if OPCOL[2] != 0:
+                        if world.manhattan_distance(cel, OPCEL[2]) < 3:
+                            j = j + 1
+                    if OPCOL[3] != 0:
+                        if world.manhattan_distance(cel, OPCEL[3]) < 3:
+                            j = j + 1
+                    if j == 4:
+                        good4.append(cel)
+
+                    elif j == 3:
+                        good3.append(cel)
+
+                    elif j == 2:
+                        good2.append(cel)
+
+                    elif j == 1:
+                        good1.append(cel)
+                if len(good4) != 0:
+                    ff = []
+                    B = []
+                    for gd in good4:
+                        if world.manhattan_distance(CEL[2], gd) < 6:
+                            bb = 1
+                            break
+                        else:
+                            for cel in M:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    ff.append(cel)
+                    if bb == 0 and uuu == 0:
+                        for fff in ff:
+                            dg = get_path_move_directions(start_cell=CEL[2], end_cell=fff, world=world)
+                            B.append(len(dg))
+                        if len(B) > 0:
+                            Y = B.index(min(B))
+                            if (B[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[2], end_cell=ff[Y], world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[2], direction=dg[0])
+                                    uuu = 1
+
+                elif uuu == 0 and bb == 0 and len(good3) > 0:
+                    ff = []
+                    B = []
+                    for gd in good3:
+                        if world.manhattan_distance(CEL[2], gd) < 6:
+                            bb = 1
+                            break
+                        else:
+                            for cel in M:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    ff.append(cel)
+                    if bb == 0 and uuu == 0:
+                        for fff in ff:
+                            dg = get_path_move_directions(start_cell=CEL[2], end_cell=fff, world=world)
+                            B.append(len(dg))
+                        if len(B) > 0:
+                            Y = B.index(min(B))
+                            if (B[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[2], end_cell=ff[Y], world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[2], direction=dg[0])
+                                    uuu = 1
+
+
+                elif uuu == 0 and bb == 0 and len(good2) > 0:
+                    fff2 = []
+                    BB2 = []
+                    for gd in good2:
+                        if world.manhattan_distance(CEL[2], gd) < 6:
+                            bb = 1
+                            break
+                        else:
+                            for cel in M:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    fff2.append(cel)
+                    if bb == 0 and uuu == 0:
+                        for fff in fff2:
+                            dg = get_path_move_directions(start_cell=CEL[2], end_cell=fff, world=world)
+                            BB2.append(len(dg))
+                        if len(BB2) > 0:
+                            Y = BB2.index(min(BB2))
+                            if (BB2[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[2], end_cell=fff2[Y], world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[2], direction=dg[0])
+                                    uuu = 1
+                elif uuu == 0 and bb == 0 and len(good1) > 0:
+                    fff1 = []
+                    BB1 = []
+                    for gd in good1:
+                        if world.manhattan_distance(CEL[2], gd) < 6:
+                            bb = 1
+                            break
+                        else:
+                            for cel in M:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    fff1.append(cel)
+                    if bb == 0 and uuu == 0:
+                        for fff in fff1:
+                            dg = get_path_move_directions(start_cell=CEL[2], end_cell=fff, world=world)
+                            BB1.append(len(dg))
+                        if len(BB1) > 0:
+                            Y = BB1.index(min(BB1))
+                            if (BB1[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[2], end_cell=fff1[Y], world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[2], direction=dg[0])
+                                    uuu = 1
+            # if hhh2 is True and  bb == 0 and uuuu==0:
+            #     uuuu = 0
+            #     if OPCOL[0] != 0 and uuuu == 0:
+            #         if world.opp_heroes[0].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[0].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[2], OPCEL[0]) < 8:
+            #                     for cel in M:
+            #                         if world.manhattan_distance(start_cell=CEL[2], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[1] and cel != CEL[3] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            #     if OPCOL[1] != 0 and uuuu == 0:
+            #         if world.opp_heroes[1].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[1].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[2], OPCEL[1]) < 8:
+            #                     for cel in M:
+            #                         if world.manhattan_distance(start_cell=CEL[2], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[1] and cel != CEL[3] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            #     if OPCOL[2] != 0 and uuuu == 0:
+            #         if world.opp_heroes[2].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[2].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[2], OPCEL[2]) < 8:
+            #                     for cel in M:
+            #                         if world.manhattan_distance(start_cell=CEL[2], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[1] and cel != CEL[3] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            #     if OPCOL[3] != 0 and uuuu == 0:
+            #         if world.opp_heroes[3].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[3].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[2], OPCEL[3]) < 8:
+            #                     for cel in M:
+            #                         if world.manhattan_distance(start_cell=CEL[2], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[1] and cel != CEL[3] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            if hh2 is True and uuu == 0 and bb == 0 and l2 != 0 and D == 0 and h2 is False and FAZ>4 and hhh2 is False and uuuu==0 and world.my_heroes[2].current_hp > 0:
+                Q = []
+                for cel in M:
+                    K = 0
+                    if OPCOL[0] != 0:
+                        if world.get_impact_cell(ability=world.my_heroes[2].get_ability(fa), start_cell=cel,target_cell=OPCEL[0]) == OPCEL[0]:
+                            Q.append(cel)
+                            K = 1
+                    if OPCOL[1] != 0 and K == 0:
+                        if world.get_impact_cell(ability=world.my_heroes[2].get_ability(fa), start_cell=cel,target_cell=OPCEL[1]) == OPCEL[1]:
+                            Q.append(cel)
+                            K = 1
+                    if OPCOL[2] != 0 and K == 0:
+                        if world.get_impact_cell(ability=world.my_heroes[2].get_ability(fa), start_cell=cel,target_cell=OPCEL[2]) == OPCEL[2]:
+                            Q.append(cel)
+                            K = 1
+                    if OPCOL[3] != 0 and K == 0:
+                        if world.get_impact_cell(ability=world.my_heroes[2].get_ability(fa), start_cell=cel,target_cell=OPCEL[3]) == OPCEL[3]:
+                            Q.append(cel)
+                            K = 1
+                i = 0
+                bbbb = []
+                bbbb.clear()
+                D = 0
+                if len(Q) > 0:
+                    for q in Q:
+                        if q == CEL[2]:
+                            D = 1
+                            break
+                        else:
+                            e = get_path_move_directions(start_cell=CEL[2], end_cell=q, world=world)
+                            s = len(e)
+                            bbbb.append(s)
+                    if len(bbbb) > 0:
+                        a = bbbb.index(min(bbbb))
+                        if D == 0:
+                            e = get_path_move_directions(start_cell=CEL[2], end_cell=Q[a], world=world)
+                            if len(e) > 0 and (len(e) + FAZ - 1) < 7:
+                                world.move_hero(hero=world.my_heroes[2], direction=e[0])
+                                uuu = 1
+            # if hhh2 is False and uuu == 0 and bb == 0 and l2 != 0 and D == 0 and h2 is False and hh2 is False:
+            #     i = 0
+            #     j = 0
+            #     good4 = []
+            #     good1 = []
+            #     good2 = []
+            #     good3 = []
+            #     uuu = 0
+            #     bb = 0
+            #     for cel in M:
+            #         j = 0
+            #         if OPCOL[0] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[0]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[0] == 0:
+            #             j = j + 1
+            #         if OPCOL[1] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[1]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[1] == 0:
+            #             j = j + 1
+            #         if OPCOL[2] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[2]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[2] == 0:
+            #             j = j + 1
+            #         if OPCOL[3] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[3]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[3] == 0:
+            #             j = j + 1
+            #         if j == 4:
+            #             good4.append(cel)
+            #
+            #         elif j == 3:
+            #             good3.append(cel)
+            #
+            #         elif j == 2:
+            #             good2.append(cel)
+            #
+            #         elif j == 1:
+            #             good1.append(cel)
+            #     if len(good4) != 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good4:
+            #             if gd == CEL[2]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[2], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         if bb == 0 and uuu == 0:
+            #             for fff in ff:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[2], end_cell=fff)
+            #                 B.append(len(dg))
+            #             if len(B) > 0:
+            #                 Y = B.index(min(B))
+            #                 if (B[Y] + FAZ - 1) < 7:
+            #                     dg = world.get_path_move_directions(start_cell=CEL[2], end_cell=ff[Y])
+            #                     if len(dg) > 0:
+            #                         world.move_hero(hero=world.my_heroes[2], direction=dg[0])
+            #                         uuu = 1
+            #     elif uuu == 0 and bb == 0 and len(good3) > 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good3:
+            #             if gd == CEL[2]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[2], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         if bb == 0 and uuu == 0:
+            #             for fff in ff:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[2], end_cell=fff)
+            #                 B.append(len(dg))
+            #             if len(B) > 0:
+            #                 Y = B.index(min(B))
+            #                 if (B[Y] + FAZ - 1) < 7:
+            #                     dg = world.get_path_move_directions(start_cell=CEL[2], end_cell=ff[Y])
+            #                     if len(dg) > 0:
+            #                         world.move_hero(hero=world.my_heroes[2], direction=dg[0])
+            #                         uuu = 1
+            #     elif uuu == 0 and bb == 0 and len(good2) > 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good2:
+            #             if gd == CEL[2]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[2], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         if bb == 0 and uuu == 0:
+            #             for fff in ff:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[2], end_cell=fff)
+            #                 B.append(len(dg))
+            #             if len(B) > 0:
+            #                 Y = B.index(min(B))
+            #                 if (B[Y] + FAZ - 1) < 7:
+            #                     dg = world.get_path_move_directions(start_cell=CEL[2], end_cell=ff[Y])
+            #                     if len(dg) > 0:
+            #                         world.move_hero(hero=world.my_heroes[2], direction=dg[0])
+            #                         uuu = 1
+            #     elif uuu == 0 and bb == 0 and len(good1) > 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good1:
+            #             if gd == CEL[2]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[2], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         if bb == 0 and uuu == 0:
+            #             for fff in ff:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[2], end_cell=fff)
+            #                 B.append(len(dg))
+            #             if len(B) > 0:
+            #                 Y = B.index(min(B))
+            #                 if (B[Y] + FAZ - 1) < 7:
+            #                     dg = world.get_path_move_directions(start_cell=CEL[2], end_cell=ff[Y])
+            #                     if len(dg) > 0:
+            #                         world.move_hero(hero=world.my_heroes[2], direction=dg[0])
+            #                         uuu = 1
+            if uuu == 0 and bb == 0 and D == 0 and l2 ==0 and uuuu==0 and world.my_heroes[2].current_hp > 0 and l2==0:
+                if len(DO2) > 0:
+                    world.move_hero(hero=world.my_heroes[2], direction=DO2[0])
+                    uuu = 1
+            bb = 0
+            uuu = 0
+            uuuu=0
+            D = 0
+            if h3 is True and uuu == 0 and l3 != 0 and D == 0 and FAZ>5 and world.my_heroes[3].current_hp > 0:
+                i = 0
+                j = 0
+                good4 = []
+                good1 = []
+                good2 = []
+                good3 = []
+                uuu = 0
+                bb = 0
+                for cel in N:
+                    j = 0
+                    if OPCOL[0] != 0:
+                        if world.manhattan_distance(cel, OPCEL[0]) < 3:
+                            j = j + 1
+                    if OPCOL[1] != 0:
+                        if world.manhattan_distance(cel, OPCEL[1]) < 3:
+                            j = j + 1
+                    if OPCOL[2] != 0:
+                        if world.manhattan_distance(cel, OPCEL[2]) < 3:
+                            j = j + 1
+                    if OPCOL[3] != 0:
+                        if world.manhattan_distance(cel, OPCEL[3]) < 3:
+                            j = j + 1
+                    if j == 4:
+                        good4.append(cel)
+
+                    elif j == 3:
+                        good3.append(cel)
+
+                    elif j == 2:
+                        good2.append(cel)
+
+                    elif j == 1:
+                        good1.append(cel)
+                if len(good4) != 0:
+                    ff = []
+                    B = []
+                    for gd in good4:
+                        if world.manhattan_distance(CEL[3], gd) < 6:
+                            bb = 1
+                            break
+                        else:
+                            for cel in N:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    ff.append(cel)
+                    if bb == 0 and uuu == 0:
+                        for fff in ff:
+                            dg = get_path_move_directions(start_cell=CEL[3], end_cell=fff, world=world)
+                            B.append(len(dg))
+                        if len(B) > 0:
+                            Y = B.index(min(B))
+                            if (B[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[3], end_cell=ff[Y], world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[3], direction=dg[0])
+                                    uuu = 1
+
+                elif uuu == 0 and bb == 0 and len(good3) > 0:
+                    ff = []
+                    B = []
+                    for gd in good3:
+                        if world.manhattan_distance(CEL[3], gd) < 6:
+                            bb = 1
+                            break
+                        else:
+                            for cel in N:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    ff.append(cel)
+                    if bb == 0 and uuu == 0:
+                        for fff in ff:
+                            dg = get_path_move_directions(start_cell=CEL[3], end_cell=fff, world=world)
+                            B.append(len(dg))
+                        if len(B) > 0:
+                            Y = B.index(min(B))
+                            if (B[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[3], end_cell=ff[Y], world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[3], direction=dg[0])
+                                    uuu = 1
+
+                elif uuu == 0 and bb == 0 and len(good2) > 0:
+                    fff2 = []
+                    BB2 = []
+                    for gd in good2:
+                        if world.manhattan_distance(CEL[3], gd) < 6:
+                            bb = 1
+                            break
+                        else:
+                            for cel in N:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    fff2.append(cel)
+                    if bb == 0 and uuu == 0:
+                        for fff in fff2:
+                            dg = get_path_move_directions(start_cell=CEL[3], end_cell=fff, world=world)
+                            BB2.append(len(dg))
+                        if len(BB2) > 0:
+                            Y = BB2.index(min(BB2))
+                            if (BB2[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[3], end_cell=fff2[Y], world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[3], direction=dg[0])
+                                    uuu = 1
+
+                elif uuu == 0 and bb == 0 and len(good1) > 0:
+                    fffW = []
+                    BBW = []
+                    for gd in good1:
+                        if world.manhattan_distance(CEL[3], gd) < 6:
+                            bb = 1
+                            break
+                        else:
+                            for cel in N:
+                                if world.manhattan_distance(cel, gd) < 6:
+                                    fffW.append(cel)
+                    if bb == 0 and uuu == 0:
+                        for fffff in fffW:
+                            dg = get_path_move_directions(start_cell=CEL[3], end_cell=fffff, world=world)
+                            BBW.append(len(dg))
+                        if len(BBW) > 0:
+                            Y = BBW.index(min(BBW))
+                            if (BBW[Y] + FAZ - 1) < 7:
+                                dg = get_path_move_directions(start_cell=CEL[3], end_cell=fffW[Y], world=world)
+                                if len(dg) > 0:
+                                    world.move_hero(hero=world.my_heroes[3], direction=dg[0])
+                                    uuu = 1
+            # if hhh3 is True and bb == 0 and uuuu==0:
+            #     uuuu = 0
+            #     if OPCOL[0] != 0 and uuuu == 0:
+            #         if world.opp_heroes[0].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[0].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[3], OPCEL[0]) < 8:
+            #                     for cel in N:
+            #                         if world.manhattan_distance(start_cell=CEL[3], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[1] and cel != CEL[2] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            #     if OPCOL[1] != 0 and uuuu == 0:
+            #         if world.opp_heroes[1].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[1].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[3], OPCEL[1]) < 8:
+            #                     for cel in N:
+            #                         if world.manhattan_distance(start_cell=CEL[3], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[1] and cel != CEL[2] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            #     if OPCOL[2] != 0 and uuuu == 0:
+            #         if world.opp_heroes[2].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[2].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[3], OPCEL[2]) < 8:
+            #                     for cel in N:
+            #                         if world.manhattan_distance(start_cell=CEL[3], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[1] and cel != CEL[2] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            #     if OPCOL[3] != 0 and uuuu == 0:
+            #         if world.opp_heroes[3].name == HeroName.BLASTER:
+            #             ti = world.opp_heroes[3].get_ability(f).is_ready()
+            #             if ti is True:
+            #                 if world.manhattan_distance(CEL[3], OPCEL[3]) < 8:
+            #                     for cel in N:
+            #                         if world.manhattan_distance(start_cell=CEL[3], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[1] and cel != CEL[2] and uuuu == 0:
+            #                             uuuu = 1
+            #                             break
+            if hh3 is True and uuu == 0 and bb == 0 and l3 != 0 and D == 0 and h3 is False and FAZ>4 and hhh3 is False and  uuuu==0 and world.my_heroes[3].current_hp > 0:
+                Q = []
+                for cel in N:
+                    K = 0
+                    if OPCOL[0] != 0:
+                        if world.get_impact_cell(ability=world.my_heroes[3].get_ability(fa), start_cell=cel,target_cell=OPCEL[0]) == OPCEL[0]:
+                            Q.append(cel)
+                            K = 1
+                    if OPCOL[1] != 0 and K == 0:
+                        if world.get_impact_cell(ability=world.my_heroes[3].get_ability(fa), start_cell=cel,target_cell=OPCEL[1]) == OPCEL[1]:
+                            Q.append(cel)
+                            K = 1
+                    if OPCOL[2] != 0 and K == 0:
+                        if world.get_impact_cell(ability=world.my_heroes[3].get_ability(fa), start_cell=cel,target_cell=OPCEL[2]) == OPCEL[2]:
+                            Q.append(cel)
+                            K = 1
+                    if OPCOL[3] != 0 and K == 0:
+                        if world.get_impact_cell(ability=world.my_heroes[3].get_ability(fa), start_cell=cel,target_cell=OPCEL[3]) == OPCEL[3]:
+                            Q.append(cel)
+                            K = 1
+                i = 0
+                bbbb = []
+                bbbb.clear()
+                D = 0
+                if len(Q) > 0:
+                    for q in Q:
+                        if q == CEL[3]:
+                            D = 1
+                            break
+                        else:
+                            e = get_path_move_directions(start_cell=CEL[3], end_cell=q, world=world)
+                            s = len(e)
+                            bbbb.append(s)
+                    if len(bbbb) > 0:
+                        a = bbbb.index(min(bbbb))
+                        if D == 0:
+                            e = get_path_move_directions(start_cell=CEL[3], end_cell=Q[a], world=world)
+                            if len(e) > 0 and (len(e) + FAZ - 1) < 7:
+                                world.move_hero(hero=world.my_heroes[3], direction=e[0])
+                                uuu = 1
+            # if hhh3 is False and uuu == 0 and bb == 0 and l3 != 0 and D == 0 and h3 is False and hh3 is False:
+            #     i = 0
+            #     j = 0
+            #     good4 = []
+            #     good1 = []
+            #     good2 = []
+            #     good3 = []
+            #     uuu = 0
+            #     bb = 0
+            #     for cel in N:
+            #         j = 0
+            #         if OPCOL[0] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[0]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[0] == 0:
+            #             j = j + 1
+            #         if OPCOL[1] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[1]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[1] == 0:
+            #             j = j + 1
+            #         if OPCOL[2] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[2]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[2] == 0:
+            #             j = j + 1
+            #         if OPCOL[3] != 0:
+            #             if world.manhattan_distance(cel, OPCEL[3]) > 5:
+            #                 j = j + 1
+            #         elif OPCOL[3] == 0:
+            #             j = j + 1
+            #         if j == 4:
+            #             good4.append(cel)
+            #
+            #         elif j == 3:
+            #             good3.append(cel)
+            #
+            #         elif j == 2:
+            #             good2.append(cel)
+            #
+            #         elif j == 1:
+            #             good1.append(cel)
+            #     if len(good4) != 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good4:
+            #             if gd == CEL[3]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[3], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         if bb == 0 and uuu == 0:
+            #             for fff in ff:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[3], end_cell=fff)
+            #                 B.append(len(dg))
+            #             if len(B) > 0:
+            #                 Y = B.index(min(B))
+            #                 if (B[Y] + FAZ - 1) < 7:
+            #                     dg = world.get_path_move_directions(start_cell=CEL[3], end_cell=ff[Y])
+            #                     if len(dg) > 0:
+            #                         world.move_hero(hero=world.my_heroes[3], direction=dg[0])
+            #                         uuu = 1
+            #
+            #     elif uuu == 0 and bb == 0 and len(good3) > 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good3:
+            #             if gd == CEL[3]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[3], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         if bb == 0 and uuu == 0:
+            #             for fff in ff:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[3], end_cell=fff)
+            #                 B.append(len(dg))
+            #             if len(B) > 0:
+            #                 Y = B.index(min(B))
+            #                 if (B[Y] + FAZ - 1) < 7:
+            #                     dg = world.get_path_move_directions(start_cell=CEL[3], end_cell=ff[Y])
+            #                     if len(dg) > 0:
+            #                         world.move_hero(hero=world.my_heroes[3], direction=dg[0])
+            #                         uuu = 1
+            #
+            #     elif uuu == 0 and bb == 0 and len(good2) > 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good2:
+            #             if gd == CEL[3]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[3], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         if bb == 0 and uuu == 0:
+            #             for fff in ff:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[3], end_cell=fff)
+            #                 B.append(len(dg))
+            #             if len(B) > 0:
+            #                 Y = B.index(min(B))
+            #                 if (B[Y] + FAZ - 1) < 7:
+            #                     dg = world.get_path_move_directions(start_cell=CEL[3], end_cell=ff[Y])
+            #                     if len(dg) > 0:
+            #                         world.move_hero(hero=world.my_heroes[3], direction=dg[0])
+            #                         uuu = 1
+            #
+            #     elif uuu == 0 and bb == 0 and len(good1) > 0:
+            #         ff = []
+            #         B = []
+            #         for gd in good1:
+            #             if gd == CEL[3]:
+            #                 bb = 1
+            #                 break
+            #             else:
+            #                 ss = world.get_path_move_directions(start_cell=CEL[3], end_cell=gd)
+            #                 if (len(ss) + FAZ - 1) < 7:
+            #                     ff.append(gd)
+            #         if bb == 0 and uuu == 0:
+            #             for fff in ff:
+            #                 dg = world.get_path_move_directions(start_cell=CEL[3], end_cell=fff)
+            #                 B.append(len(dg))
+            #             if len(B) > 0:
+            #                 Y = B.index(min(B))
+            #                 if (B[Y] + FAZ - 1) < 7:
+            #                     dg = world.get_path_move_directions(start_cell=CEL[3], end_cell=ff[Y])
+            #                     if len(dg) > 0:
+            #                         world.move_hero(hero=world.my_heroes[3], direction=dg[0])
+            #                         uuu = 1
+            if uuu == 0 and bb == 0 and D == 0 and l3 ==0 and uuuu==0 and world.my_heroes[3].current_hp > 0 and l3==0:
+                if len(DO3) > 0:
+                    world.move_hero(hero=world.my_heroes[3], direction=DO3[0])
+                    uuu = 1
 
     def action(self, world):
         print("action")
-        
+        c = world.map.objective_zone
+        r = world.map.opp_respawn_zone
+        co = []
+        ro = []
+        D=0
+        OPCEL = [0, 0, 0, 0]
+        OPROW = [0, 0, 0, 0]
+        OPCOL = [0, 0, 0, 0]
+        OPHP = [0, 0, 0, 0]
+        rores = [0, 0, 0, 0]
+        cores = [0, 0, 0, 0]
+        i = 0
+        for ophero in world.opp_heroes:
+            opcel = ophero.current_cell
+            row = opcel.row
+            if row != -1:
+                OPHP[i] = ophero.current_hp
+            i = i + 1
+        i = 0
+        for ophero in world.opp_heroes:
+            opcel = ophero.current_cell
+            row = opcel.row
+            if row != -1:
+                OPCEL[i] = ophero.current_cell
+                OPCOL[i] = OPCEL[i].column
+                OPROW[i] = OPCEL[i].row
+            i = i + 1
+        HP = [0, 0, 0, 0]
+        CEL = [0, 0, 0, 0]
+        COL = [0, 0, 0, 0]
+        ROW = [0, 0,0, 0]
+        i = 0
+        for hero in world.my_heroes:
+            HP[i] = hero.current_hp
+            i = i + 1
+        i = 0
+        for hero in world.my_heroes:
+            CEL[i] = hero.current_cell
+            COL[i] = CEL[i].column
+            ROW[i] = CEL[i].row
+            i = i + 1
+        FAZ = world.move_phase_num
+        U = len(c)
+        A = U // 2
+        V = U // 4
+        VV = (U // 4) * 3
+        E = []
+        T = []
+        for cel in c:
+            ui = cel.row
+            iu = cel.column
+            E.append(ui)
+            T.append(iu)
+        mxro = max(E)
+        mxco = max(T)
+        miro = min(E)
+        mico = min(T)
+        R = c[0].row
+        C = c[0].column
+        G = []
+        H = []
+        M = []
+        N = []
+        for cel in c:
+            r = cel.row
+            cl = cel.column
+            if r >= miro and r <= ((mxro + miro) // 2) and cl >= mico and cl <= ((mxco + mico) // 2):
+                G.append(cel)
+            elif r > (((mxro + miro) // 2)) and cl >= mico and cl <= ((mxco + mico) // 2):
+                H.append(cel)
+            elif r > (((mxro + miro) // 2)) and cl > ((mxco + mico) // 2):
+                N.append(cel)
+            elif r >= miro and r <= ((mxro + miro) // 2) and cl > ((mxco + mico) // 2):
+                M.append(cel)
+        b = []
+        i = 0
+        w = 1000
+        f = AbilityName.BLASTER_BOMB
+        h = world.my_heroes[0].get_ability(f).is_ready()
+        h1 = world.my_heroes[1].get_ability(f).is_ready()
+        h2 = world.my_heroes[2].get_ability(f).is_ready()
+        h3 = world.my_heroes[3].get_ability(f).is_ready()
+        fa = AbilityName.BLASTER_ATTACK
+        hh = world.my_heroes[0].get_ability(fa).is_ready()
+        hh1 = world.my_heroes[1].get_ability(fa).is_ready()
+        hh2 = world.my_heroes[2].get_ability(fa).is_ready()
+        hh3 = world.my_heroes[3].get_ability(fa).is_ready()
+        faa = AbilityName.BLASTER_DODGE
+        hhh = world.my_heroes[0].get_ability(faa).is_ready()
+        hhh1 = world.my_heroes[1].get_ability(faa).is_ready()
+        hhh2 = world.my_heroes[2].get_ability(faa).is_ready()
+        hhh3 = world.my_heroes[3].get_ability(faa).is_ready()
+        bb=0
+        p=0
+        if h1 is True :
+            i = 0
+            j = 0
+            good4 = []
+            good1 = []
+            good2 = []
+            good3 = []
+            uuu = 0
+            bb = 0
+            for cel in c:
+                j=0
+                if OPCOL[0] != 0:
+                    if world.manhattan_distance(cel, OPCEL[0]) < 3:
+                        j = j + 1
+                if OPCOL[1] != 0:
+                    if world.manhattan_distance(cel, OPCEL[1]) < 3:
+                        j = j + 1
+                if OPCOL[2] != 0:
+                    if world.manhattan_distance(cel, OPCEL[2]) < 3:
+                        j = j + 1
+                if OPCOL[3] != 0:
+                    if world.manhattan_distance(cel, OPCEL[3]) < 3:
+                        j = j + 1
+                if j == 4:
+                    good4.append(cel)
+                elif j == 3:
+                    good3.append(cel)
+                elif j == 2:
+                    good2.append(cel)
+                elif j == 1:
+                    good1.append(cel)
+            if len(good4) > 0:
+                bb=0
+                for gd in good4:
+                    if world.manhattan_distance(CEL[1], gd) < 6 and bb==0:
+                        bb = 1
+                        world.cast_ability(hero=world.my_heroes[1],ability=world.my_heroes[1].get_ability(f),cell=gd)
+                        break
+            elif bb == 0 and len(good3) > 0:
+                for gd in good3:
+                    if world.manhattan_distance(CEL[1], gd) < 6 and bb==0:
+                        bb = 1
+                        world.cast_ability(hero=world.my_heroes[1], ability=world.my_heroes[1].get_ability(f), cell=gd)
+                        break
+            elif  bb == 0 and len(good2) > 0:
+                for gd in good2:
+                    if world.manhattan_distance(CEL[1], gd) < 6 and bb==0:
+                        world.cast_ability(hero=world.my_heroes[1], ability=world.my_heroes[1].get_ability(f), cell=gd)
+                        bb = 1
+                        break
+            elif bb == 0 and len(good1) > 0:
+                for gd in good1:
+                    if world.manhattan_distance(CEL[1], gd) < 6 and bb==0:
+                        world.cast_ability(hero=world.my_heroes[1], ability=world.my_heroes[1].get_ability(f), cell=gd)
+                        bb = 1
+                        break
+        if hhh1 is True and p ==0 and bb ==0 and h1 is False :
+            uuuu=0
+            if OPCOL[0]!=0 :
+                if world.manhattan_distance(CEL[1],OPCEL[0])<6:
+                    for cel in H:
+                            if world.manhattan_distance(start_cell=CEL[1],end_cell= cel) > 2 and cel != CEL[0] and cel != CEL[2] and cel != CEL[3] and uuuu == 0:
+                                world.cast_ability(hero=world.my_heroes[1], ability=world.my_heroes[1].get_ability(faa),cell=cel)
+                                uuuu = 1
+                                break
+
+            if OPCOL[1] !=0 and uuuu==0:
+                if world.manhattan_distance(CEL[1],OPCEL[1])<6 :
+                    for cel in H:
+                            if world.manhattan_distance(CEL[1], cel) > 2 and cel != CEL[0] and cel != CEL[2] and cel != CEL[3] and uuuu == 0:
+                                world.cast_ability(hero=world.my_heroes[1], ability=world.my_heroes[1].get_ability(faa),cell=cel)
+                                uuuu = 1
+                                break
+
+            if OPCOL[2] !=0 and uuuu==0:
+                if world.manhattan_distance(CEL[1],OPCEL[2])<6 :
+                    for cel in H:
+                            if world.manhattan_distance(CEL[1], cel) > 2 and cel != CEL[0] and cel != CEL[2] and cel != CEL[3] and uuuu == 0:
+                                world.cast_ability(hero=world.my_heroes[1], ability=world.my_heroes[1].get_ability(faa),cell=cel)
+                                uuuu = 1
+                                break
+
+            if OPCOL[3] !=0 and uuuu==0:
+                if world.manhattan_distance(CEL[1],OPCEL[3])<6 :
+                    for cel in H:
+                            if world.manhattan_distance(CEL[1], cel) > 2 and cel != CEL[0] and cel != CEL[2] and cel != CEL[3] and uuuu == 0:
+                                world.cast_ability(hero=world.my_heroes[1], ability=world.my_heroes[1].get_ability(faa),cell=cel)
+                                uuuu = 1
+                                break
+        if hh1 is True and bb ==0 and h1 is False :
+            p=0
+            if OPCOL[2] != 0:
+                    if world.get_impact_cell(ability=world.my_heroes[1].get_ability(fa), start_cell=CEL[1], target_cell=OPCEL[2]) == OPCEL[2]:
+                        world.cast_ability(hero=world.my_heroes[1],ability=world.my_heroes[1].get_ability(fa),cell=OPCEL[2])
+                        P=1
+            if OPCOL[0] != 0 and p==0 :
+                    if world.get_impact_cell(ability=world.my_heroes[1].get_ability(fa), start_cell=CEL[1], target_cell=OPCEL[0]) == OPCEL[0]:
+                        world.cast_ability(hero=world.my_heroes[1],ability=world.my_heroes[1].get_ability(fa),cell=OPCEL[0])
+                        P = 1
+            if OPCOL[1] != 0 and p==0:
+                    if world.get_impact_cell(ability=world.my_heroes[1].get_ability(fa), start_cell=CEL[1], target_cell=OPCEL[1]) == OPCEL[1]:
+                        world.cast_ability(hero=world.my_heroes[1],ability=world.my_heroes[1].get_ability(fa),cell=OPCEL[1])
+                        P = 1
+            if OPCOL[3] != 0 and p==0:
+                    if world.get_impact_cell(ability=world.my_heroes[1].get_ability(fa), start_cell=CEL[1], target_cell=OPCEL[3]) == OPCEL[3]:
+                        world.cast_ability(hero=world.my_heroes[1],ability=world.my_heroes[1].get_ability(fa),cell=OPCEL[3])
+                        P = 1
+        p = 0
+        bb=0
+        if h is True :
+            i = 0
+            j = 0
+            good4 = []
+            good1 = []
+            good2 = []
+            good3 = []
+            uuu = 0
+            bb = 0
+            for cel in c:
+                j=0
+                if OPCOL[0] != 0:
+                    if world.manhattan_distance(cel, OPCEL[0]) < 3:
+                        j = j + 1
+                if OPCOL[1] != 0:
+                    if world.manhattan_distance(cel, OPCEL[1]) < 3:
+                        j = j + 1
+                if OPCOL[2] != 0:
+                    if world.manhattan_distance(cel, OPCEL[2]) < 3:
+                        j = j + 1
+                if OPCOL[3] != 0:
+                    if world.manhattan_distance(cel, OPCEL[3]) < 3:
+                        j = j + 1
+                if j == 4:
+                    good4.append(cel)
+                elif j == 3:
+                    good3.append(cel)
+                elif j == 2:
+                    good2.append(cel)
+                elif j == 1:
+                    good1.append(cel)
+            if len(good4) > 0:
+                bb=0
+                for gd in good4:
+                    if world.manhattan_distance(CEL[0], gd) < 6 and bb==0:
+                        bb = 1
+                        world.cast_ability(hero=world.my_heroes[0],ability=world.my_heroes[0].get_ability(f),cell=gd)
+                        break
+            elif bb == 0 and len(good3) > 0:
+                for gd in good3:
+                    if world.manhattan_distance(CEL[0], gd) < 6 and bb==0:
+                        bb = 1
+                        world.cast_ability(hero=world.my_heroes[0], ability=world.my_heroes[0].get_ability(f), cell=gd)
+                        break
+            elif  bb == 0 and len(good2) > 0:
+                for gd in good2:
+                    if world.manhattan_distance(CEL[0], gd) < 6 and bb==0:
+                        world.cast_ability(hero=world.my_heroes[0], ability=world.my_heroes[0].get_ability(f), cell=gd)
+                        bb = 1
+                        break
+            elif bb == 0 and len(good1) > 0:
+                for gd in good1:
+                    if world.manhattan_distance(CEL[0], gd) < 6 and bb==0:
+                        world.cast_ability(hero=world.my_heroes[0], ability=world.my_heroes[0].get_ability(f), cell=gd)
+                        bb = 1
+                        break
+        if hhh is True and p ==0 and bb ==0 and h is False :
+            uuuu=0
+            if OPCOL[0]!=0 :
+                if world.manhattan_distance(CEL[0],OPCEL[0])<6:
+                    for cel in G:
+                            if world.manhattan_distance(CEL[0], cel) > 2 and cel != CEL[1] and cel != CEL[2] and cel != CEL[3] and uuuu == 0:
+                                world.cast_ability(hero=world.my_heroes[0], ability=world.my_heroes[0].get_ability(faa),cell=cel)
+                                uuuu = 1
+                                break
+
+            if OPCOL[1] !=0 and uuuu==0:
+                if world.manhattan_distance(CEL[0],OPCEL[1])<6 :
+                    for cel in G:
+                            if world.manhattan_distance(CEL[0], cel) > 2 and cel != CEL[1] and cel != CEL[2] and cel != CEL[3] and uuuu == 0:
+                                world.cast_ability(hero=world.my_heroes[0], ability=world.my_heroes[0].get_ability(faa),cell=cel)
+                                uuuu = 1
+                                break
+
+            if OPCOL[2] !=0 and uuuu==0:
+                if world.manhattan_distance(CEL[0],OPCEL[2])<6 :
+                    for cel in G:
+                            if world.manhattan_distance(CEL[0], cel) > 2 and cel != CEL[1] and cel != CEL[2] and cel != CEL[3] and uuuu == 0:
+                                world.cast_ability(hero=world.my_heroes[0], ability=world.my_heroes[0].get_ability(faa),cell=cel)
+                                uuuu = 1
+                                break
+
+            if OPCOL[3] !=0 and uuuu==0:
+                if world.manhattan_distance(CEL[0],OPCEL[3])<6 :
+                    for cel in G:
+                            if world.manhattan_distance(CEL[0], cel) > 2 and cel != CEL[1] and cel != CEL[2] and cel != CEL[3] and uuuu == 0:
+                                world.cast_ability(hero=world.my_heroes[0], ability=world.my_heroes[0].get_ability(faa),cell=cel)
+                                uuuu = 1
+                                break
+        if hh is True and bb ==0 :
+            p=0
+            if OPCOL[2] != 0:
+                    if world.get_impact_cell(ability=world.my_heroes[0].get_ability(fa), start_cell=CEL[0], target_cell=OPCEL[2]) == OPCEL[2]:
+                        world.cast_ability(hero=world.my_heroes[0],ability=world.my_heroes[0].get_ability(fa),cell=OPCEL[2])
+                        P=1
+            if OPCOL[0] != 0 and p==0 :
+                    if world.get_impact_cell(ability=world.my_heroes[0].get_ability(fa), start_cell=CEL[0], target_cell=OPCEL[0]) == OPCEL[0]:
+                        world.cast_ability(hero=world.my_heroes[0],ability=world.my_heroes[0].get_ability(fa),cell=OPCEL[0])
+                        P = 1
+            if OPCOL[1] != 0 and p==0:
+                    if world.get_impact_cell(ability=world.my_heroes[0].get_ability(fa), start_cell=CEL[0], target_cell=OPCEL[1]) == OPCEL[1]:
+                        world.cast_ability(hero=world.my_heroes[0],ability=world.my_heroes[0].get_ability(fa),cell=OPCEL[1])
+                        P = 1
+            if OPCOL[3] != 0 and p==0:
+                    if world.get_impact_cell(ability=world.my_heroes[0].get_ability(fa), start_cell=CEL[0], target_cell=OPCEL[3]) == OPCEL[3]:
+                        world.cast_ability(hero=world.my_heroes[0],ability=world.my_heroes[0].get_ability(fa),cell=OPCEL[3])
+                        P = 1
+        p = 0
+        bb=0
+        if h2 is True :
+            i = 0
+            j = 0
+            good4 = []
+            good1 = []
+            good2 = []
+            good3 = []
+            uuu = 0
+            bb = 0
+            for cel in c:
+                j = 0
+                if OPCOL[0] != 0:
+                    if world.manhattan_distance(cel, OPCEL[0]) < 3:
+                        j = j + 1
+                if OPCOL[1] != 0:
+                    if world.manhattan_distance(cel, OPCEL[1]) < 3:
+                        j = j + 1
+                if OPCOL[2] != 0:
+                    if world.manhattan_distance(cel, OPCEL[2]) < 3:
+                        j = j + 1
+                if OPCOL[3] != 0:
+                    if world.manhattan_distance(cel, OPCEL[3]) < 3:
+                        j = j + 1
+                if j == 4:
+                    good4.append(cel)
+                elif j == 3:
+                    good3.append(cel)
+                elif j == 2:
+                    good2.append(cel)
+                elif j == 1:
+                    good1.append(cel)
+            if len(good4) > 0:
+                bb = 0
+                for gd in good4:
+                    if world.manhattan_distance(CEL[2], gd) < 6 and bb == 0:
+                        bb = 1
+                        world.cast_ability(hero=world.my_heroes[2], ability=world.my_heroes[2].get_ability(f), cell=gd)
+                        break
+            elif bb == 0 and len(good3) > 0:
+                for gd in good3:
+                    if world.manhattan_distance(CEL[2], gd) < 6 and bb == 0:
+                        bb = 1
+                        world.cast_ability(hero=world.my_heroes[2], ability=world.my_heroes[2].get_ability(f), cell=gd)
+                        break
+            elif bb == 0 and len(good2) > 0:
+                for gd in good2:
+                    if world.manhattan_distance(CEL[2], gd) < 6 and bb == 0:
+                        world.cast_ability(hero=world.my_heroes[2], ability=world.my_heroes[2].get_ability(f), cell=gd)
+                        bb = 1
+                        break
+            elif bb == 0 and len(good1) > 0:
+                for gd in good1:
+                    if world.manhattan_distance(CEL[2], gd) < 6 and bb == 0:
+                        world.cast_ability(hero=world.my_heroes[2], ability=world.my_heroes[2].get_ability(f), cell=gd)
+                        bb = 1
+                        break
+        if hhh2 is True and p == 0 and bb == 0 and h2 is False:
+            uuuu=0
+            if OPCOL[0]!=0 :
+                if world.manhattan_distance(CEL[2],OPCEL[0])<6:
+                    for cel in M:
+                            if world.manhattan_distance(CEL[2], cel) > 2 and cel != CEL[1] and cel != CEL[0] and cel != CEL[3] and uuuu == 0:
+                                world.cast_ability(hero=world.my_heroes[2], ability=world.my_heroes[2].get_ability(faa),cell=cel)
+                                uuuu = 1
+                                break
+
+            if OPCOL[1] !=0 and uuuu==0:
+                if world.manhattan_distance(CEL[2],OPCEL[1])<6 :
+                    for cel in M:
+                            if world.manhattan_distance(CEL[2], cel) > 2 and cel != CEL[1] and cel != CEL[0] and cel != CEL[3] and uuuu == 0:
+                                world.cast_ability(hero=world.my_heroes[2], ability=world.my_heroes[2].get_ability(faa),cell=cel)
+                                uuuu = 1
+                                break
+
+            if OPCOL[2] !=0 and uuuu==0:
+                if world.manhattan_distance(CEL[2],OPCEL[2])<6 :
+                    for cel in M:
+                            if world.manhattan_distance(CEL[2], cel) > 2 and cel != CEL[1] and cel != CEL[0] and cel != CEL[3] and uuuu == 0:
+                                world.cast_ability(hero=world.my_heroes[2], ability=world.my_heroes[2].get_ability(faa),cell=cel)
+                                uuuu = 1
+                                break
+
+            if OPCOL[3] !=0 and uuuu==0:
+                if world.manhattan_distance(CEL[2],OPCEL[3])<6 :
+                    for cel in M:
+                            if world.manhattan_distance(CEL[2], cel) > 2 and cel != CEL[1] and cel != CEL[0] and cel != CEL[3] and uuuu == 0:
+                                world.cast_ability(hero=world.my_heroes[2], ability=world.my_heroes[2].get_ability(faa),cell=cel)
+                                uuuu = 1
+                                break
+        if hh2 is True and bb ==0  :
+            p=0
+            if OPCOL[2] != 0:
+                    if world.get_impact_cell(ability=world.my_heroes[2].get_ability(fa), start_cell=CEL[2], target_cell=OPCEL[2]) == OPCEL[2]:
+                        world.cast_ability(hero=world.my_heroes[2],ability=world.my_heroes[2].get_ability(fa),cell=OPCEL[2])
+                        P=1
+            if OPCOL[0] != 0 and p==0 :
+                    if world.get_impact_cell(ability=world.my_heroes[2].get_ability(fa), start_cell=CEL[2], target_cell=OPCEL[0]) == OPCEL[0]:
+                        world.cast_ability(hero=world.my_heroes[2],ability=world.my_heroes[2].get_ability(fa),cell=OPCEL[0])
+                        P = 1
+            if OPCOL[1] != 0 and p==0:
+                    if world.get_impact_cell(ability=world.my_heroes[2].get_ability(fa), start_cell=CEL[2], target_cell=OPCEL[1]) == OPCEL[1]:
+                        world.cast_ability(hero=world.my_heroes[2],ability=world.my_heroes[2].get_ability(fa),cell=OPCEL[1])
+                        P = 1
+            if OPCOL[3] != 0 and p==0:
+                    if world.get_impact_cell(ability=world.my_heroes[2].get_ability(fa), start_cell=CEL[2], target_cell=OPCEL[3]) == OPCEL[3]:
+                        world.cast_ability(hero=world.my_heroes[2],ability=world.my_heroes[2].get_ability(fa),cell=OPCEL[3])
+                        P = 1
+        p = 0
+        bb = 0
+        if h3 is True :
+            i = 0
+            j = 0
+            good4 = []
+            good1 = []
+            good2 = []
+            good3 = []
+            uuu = 0
+            bb = 0
+            for cel in c:
+                j = 0
+                if OPCOL[0] != 0:
+                    if world.manhattan_distance(cel, OPCEL[0]) < 3:
+                        j = j + 1
+                if OPCOL[1] != 0:
+                    if world.manhattan_distance(cel, OPCEL[1]) < 3:
+                        j = j + 1
+                if OPCOL[2] != 0:
+                    if world.manhattan_distance(cel, OPCEL[2]) < 3:
+                        j = j + 1
+                if OPCOL[3] != 0:
+                    if world.manhattan_distance(cel, OPCEL[3]) < 3:
+                        j = j + 1
+                if j == 4:
+                    good4.append(cel)
+                elif j == 3:
+                    good3.append(cel)
+                elif j == 2:
+                    good2.append(cel)
+                elif j == 1:
+                    good1.append(cel)
+            if len(good4) > 0:
+                bb = 0
+                for gd in good4:
+                    if world.manhattan_distance(CEL[3], gd) < 6 and bb == 0:
+                        bb = 1
+                        world.cast_ability(hero=world.my_heroes[3], ability=world.my_heroes[3].get_ability(f), cell=gd)
+                        break
+            elif bb == 0 and len(good3) > 0:
+                for gd in good3:
+                    if world.manhattan_distance(CEL[3], gd) < 6 and bb == 0:
+                        bb = 1
+                        world.cast_ability(hero=world.my_heroes[3], ability=world.my_heroes[3].get_ability(f), cell=gd)
+                        break
+            elif bb == 0 and len(good2) > 0:
+                for gd in good2:
+                    if world.manhattan_distance(CEL[3], gd) < 6 and bb == 0:
+                        world.cast_ability(hero=world.my_heroes[3], ability=world.my_heroes[3].get_ability(f), cell=gd)
+                        bb = 1
+                        break
+            elif bb == 0 and len(good1) > 0:
+                for gd in good1:
+                    if world.manhattan_distance(CEL[3], gd) < 6 and bb == 0:
+                        world.cast_ability(hero=world.my_heroes[3], ability=world.my_heroes[3].get_ability(f), cell=gd)
+                        bb = 1
+                        break
+        if hhh3 is True and p ==0 and bb ==0 and h3 is False:
+            uuuu=0
+            if OPCOL[0]!=0 :
+                if world.manhattan_distance(CEL[3],OPCEL[0])<6:
+                    for cel in N:
+                            if world.manhattan_distance(CEL[3], cel) > 2 and cel != CEL[1] and cel != CEL[2] and cel != CEL[0] and uuuu == 0:
+                                world.cast_ability(hero=world.my_heroes[3], ability=world.my_heroes[3].get_ability(faa),cell=cel)
+                                uuuu = 1
+                                break
+
+            if OPCOL[1] !=0 and uuuu==0:
+                if world.manhattan_distance(CEL[3],OPCEL[1])<6 :
+                    for cel in N:
+                            if world.manhattan_distance(CEL[3], cel) > 2 and cel != CEL[1] and cel != CEL[2] and cel != CEL[0] and uuuu == 0:
+                                world.cast_ability(hero=world.my_heroes[3], ability=world.my_heroes[3].get_ability(faa),cell=cel)
+                                uuuu = 1
+                                break
+
+            if OPCOL[2] !=0 and uuuu==0:
+                if world.manhattan_distance(CEL[3],OPCEL[2])<6 :
+                     for cel in N:
+                            if world.manhattan_distance(CEL[3], cel) > 2 and cel != CEL[1] and cel != CEL[2] and cel != CEL[0] and uuuu == 0:
+                                world.cast_ability(hero=world.my_heroes[3], ability=world.my_heroes[3].get_ability(faa),cell=cel)
+                                uuuu = 1
+                                break
+
+            if OPCOL[3] !=0 and uuuu==0:
+                if world.manhattan_distance(CEL[3],OPCEL[3])<6 :
+                    for cel in N:
+                            if world.manhattan_distance(CEL[3], cel) > 2 and cel != CEL[1] and cel != CEL[2] and cel != CEL[0] and uuuu == 0:
+                                world.cast_ability(hero=world.my_heroes[3], ability=world.my_heroes[3].get_ability(faa),cell=cel)
+                                uuuu = 1
+                                break
+            # uuuu=0
+            # if OPCOL[0] != 0 and uuuu==0:
+            #     if world.opp_heroes[0].name == HeroName.BLASTER:
+            #         ti = world.opp_heroes[0].get_ability(f).is_ready()
+            #         if ti is True:
+            #             if world.manhattan_distance(CEL[3], OPCEL[0]) < 8:
+            #                 for cel in N:
+            #                     if world.manhattan_distance(start_cell=CEL[3], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[1] and cel != CEL[2] and uuuu == 0:
+            #                         world.cast_ability(hero=world.my_heroes[3],ability=world.my_heroes[3].get_ability(faa), cell=cel)
+            #                         uuuu = 1
+            #                         break
+            # if OPCOL[1] != 0 and uuuu==0:
+            #     if world.opp_heroes[1].name == HeroName.BLASTER:
+            #         ti = world.opp_heroes[1].get_ability(f).is_ready()
+            #         if ti is True:
+            #             if world.manhattan_distance(CEL[3], OPCEL[1]) < 8:
+            #                 for cel in N:
+            #                     if world.manhattan_distance(start_cell=CEL[3], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[1] and cel != CEL[2] and uuuu == 0:
+            #                         world.cast_ability(hero=world.my_heroes[3],ability=world.my_heroes[3].get_ability(faa), cell=cel)
+            #                         uuuu = 1
+            #                         break
+            # if OPCOL[2] != 0 and uuuu==0:
+            #     if world.opp_heroes[2].name == HeroName.BLASTER:
+            #         ti = world.opp_heroes[2].get_ability(f).is_ready()
+            #         if ti is True:
+            #             if world.manhattan_distance(CEL[3], OPCEL[2]) < 8:
+            #                 for cel in N:
+            #                     if world.manhattan_distance(start_cell=CEL[3], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[1] and cel != CEL[2] and uuuu == 0:
+            #                         world.cast_ability(hero=world.my_heroes[3],ability=world.my_heroes[3].get_ability(faa), cell=cel)
+            #                         uuuu = 1
+            #                         break
+            if OPCOL[3] != 0 and uuuu==0:
+                if world.opp_heroes[3].name == HeroName.BLASTER:
+                    ti = world.opp_heroes[3].get_ability(f).is_ready()
+                    if ti is True:
+                        if world.manhattan_distance(CEL[3], OPCEL[3]) < 8:
+                            for cel in N:
+                                if world.manhattan_distance(start_cell=CEL[3], end_cell=cel) > 2 and cel != CEL[0] and cel != CEL[1] and cel != CEL[2] and uuuu == 0:
+                                    world.cast_ability(hero=world.my_heroes[3],ability=world.my_heroes[3].get_ability(faa), cell=cel)
+                                    uuuu = 1
+                                    break
+        if hh3 is True and bb ==0 :
+            p=0
+            if OPCOL[2] != 0:
+                    if world.get_impact_cell(ability=world.my_heroes[3].get_ability(fa), start_cell=CEL[3], target_cell=OPCEL[2]) == OPCEL[2]:
+                        world.cast_ability(hero=world.my_heroes[3],ability=world.my_heroes[3].get_ability(fa),cell=OPCEL[2])
+                        P=1
+            if OPCOL[0] != 0 and p==0 :
+                    if world.get_impact_cell(ability=world.my_heroes[3].get_ability(fa), start_cell=CEL[3], target_cell=OPCEL[0]) == OPCEL[0]:
+                        world.cast_ability(hero=world.my_heroes[3],ability=world.my_heroes[3].get_ability(fa),cell=OPCEL[0])
+                        P = 1
+            if OPCOL[1] != 0 and p==0:
+                    if world.get_impact_cell(ability=world.my_heroes[3].get_ability(fa), start_cell=CEL[3], target_cell=OPCEL[1]) == OPCEL[1]:
+                        world.cast_ability(hero=world.my_heroes[3],ability=world.my_heroes[3].get_ability(fa),cell=OPCEL[1])
+                        P = 1
+            if OPCOL[3] != 0 and p==0:
+                    if world.get_impact_cell(ability=world.my_heroes[3].get_ability(fa), start_cell=CEL[3], target_cell=OPCEL[3]) == OPCEL[3]:
+                        world.cast_ability(hero=world.my_heroes[3],ability=world.my_heroes[3].get_ability(fa),cell=OPCEL[3])
+                        P = 1
+
         mnn=world.my_score
         onn=world.opp_score
         print(mnn)

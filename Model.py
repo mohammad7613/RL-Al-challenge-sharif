@@ -135,7 +135,7 @@ class Hero:
         self.current_cell = None
         self.recent_path = recent_path
         self.recent_path = recent_path
-        self.current_hp = 0
+        self.current_hp = hero_constant.max_hp
         self.update_abilities(abilities)
         self.is_protected=False #this attribute tell us that this hero is in protected in action phase by healer or guardian (change)
         self.rem_respawm_time=0
@@ -162,7 +162,7 @@ class Hero:
 
     def get_ability(self, ability_name):
         for ability in self.abilities:
-            if ability_name is AbilityName and ability_name.value == ability.name or ability.name == ability_name:
+            if ability_name.value == ability.name or ability.name == ability_name:
                 return ability
         return None
 
@@ -216,6 +216,8 @@ class Map:
         self.opp_respawn_zone = opp_respawn_zone
 
     def is_in_map(self, row, column):
+        if(row==None or column==None):
+            return
         if 0 <= row < self.row_num and 0 <= column < self.column_num:
             return True
         return False
@@ -618,25 +620,25 @@ class World:
             target_cell = self.map.get_cell(target_row, target_column)
         return self.get_impact_cells(ability_constant, start_cell, target_cell)[-1]
 
-    # def get_impact_cells(self, ability_constant, start_cell, target_cell):(delted function important)
-    #     if ability_constant.is_lobbing:
-    #         if self.manhattan_distance(target_cell, start_cell) <= ability_constant.range:
-    #             return [target_cell]
-    #     if start_cell.is_wall or start_cell == target_cell and not ability_constant.is_lobbing:
-    #         return [start_cell]
-    #     last_cell = None
-    #     ray_cells = self.get_ray_cells(start_cell, target_cell)
-    #     impact_cells = []
-    #     for cell in ray_cells:
-    #         if self.manhattan_distance(cell, start_cell) > ability_constant.range:
-    #             continue
-    #         last_cell = cell
-    #         if self.is_affected(ability_constant, cell) or ability_constant.is_lobbing:
-    #             impact_cells.append(cell)
-    #             break
-    #     if last_cell not in impact_cells:
-    #         impact_cells.append(last_cell)
-    #     return impact_cells
+    def get_impact_cells(self, ability_constant, start_cell, target_cell):#(delted function important)
+        if ability_constant.is_lobbing:
+            if self.manhattan_distance(target_cell, start_cell) <= ability_constant.range:
+                return [target_cell]
+        if start_cell.is_wall or start_cell == target_cell and not ability_constant.is_lobbing:
+            return [start_cell]
+        last_cell = None
+        ray_cells = self.get_ray_cells(start_cell, target_cell)
+        impact_cells = []
+        for cell in ray_cells:
+            if self.manhattan_distance(cell, start_cell) > ability_constant.range:
+                continue
+            last_cell = cell
+            if self.is_affected(ability_constant, cell) or ability_constant.is_lobbing:
+                impact_cells.append(cell)
+                break
+        if last_cell not in impact_cells:
+            impact_cells.append(last_cell)
+        return impact_cells
 
     def is_affected(self, ability_constant, cell):
         return (self._get_opp_hero(cell) is not None and ability_constant.type == AbilityType.OFFENSIVE) or (
@@ -715,27 +717,27 @@ class World:
             if is_between(start, target, option):
                 return option
 
-    # def get_ray_cells(self, start_cell, end_cell):(deleted function important)
-    #     if not self.is_accessible(start_cell.row, start_cell.column):
-    #         return []
-    #     if start_cell == end_cell:
-    #         return [start_cell]
-    #     res = [start_cell]
-    #     former = start_cell
-    #     while res[-1] != end_cell:
-    #         current = res[-1]
-    #         neighbour = self._calculate_neighbour(start_cell, end_cell, current, former)
-    #         if neighbour is None:
-    #             break
-    #         if neighbour.is_wall:
-    #             break
-    #         if neighbour.row != current.row and neighbour.column != current.column and (
-    #                 self.map.get_cell(current.row, neighbour.column).is_wall
-    #                 or self.map.get_cell(neighbour.row, current.column).is_wall):
-    #             break
-    #         res += [neighbour]
-    #         former = current
-    #     return res
+    def get_ray_cells(self, start_cell, end_cell):#(deleted function important)
+        if not self.is_accessible(start_cell.row, start_cell.column):
+            return []
+        if start_cell == end_cell:
+            return [start_cell]
+        res = [start_cell]
+        former = start_cell
+        while res[-1] != end_cell:
+            current = res[-1]
+            neighbour = self._calculate_neighbour(start_cell, end_cell, current, former)
+            if neighbour is None:
+                break
+            if neighbour.is_wall:
+                break
+            if neighbour.row != current.row and neighbour.column != current.column and (
+                    self.map.get_cell(current.row, neighbour.column).is_wall
+                    or self.map.get_cell(neighbour.row, current.column).is_wall):
+                break
+            res += [neighbour]
+            former = current
+        return res
 
     def is_in_vision(self, start_cell=None, start_row=None, start_column=None, end_cell=None, end_row=None,
                      end_column=None):
@@ -926,10 +928,6 @@ class World:
             pass
 
     def move_hero(self, hero_id=None, hero=None, direction=None):
-        if(self.myturn==1):
-            self.heroid_dict_move[hero_id]=direction#(changed)
-        else:
-            self.opp_heroid_dict_move[hero_id] = direction  # (changed)
         if World.DEBUGGING_MODE and World.LOG_FILE_POINTER is not None:
             World.LOG_FILE_POINTER.write('\n' + '-------move hero-------\n' + 'hero_id:' + str(hero_id) +
                                          '\thero=' + str(hero) + '\n directions:' + str(direction) + '\n\n')
@@ -946,6 +944,16 @@ class World:
         else:
             #self.queue.put(Event('move', [hero.id, dir_val, self.current_turn, self.move_phase_num]))
             pass
+        if (self.myturn == 1):
+            if hero_id is not None:
+                self.heroid_dict_move[hero_id] = direction  # (changed)
+            else:
+                self.heroid_dict_move[hero.id] = direction  # (changed)
+        else:
+            if hero_id is not None:
+                self.opp_heroid_dict_move[hero_id] = direction  # (changed)
+            else:
+                self.opp_heroid_dict_move[hero.id] = direction  # (changed)
     def Env_move_hero(self):#we can improve thisfunction if we use hero object as keyvalue of dict in possible action instead of heroid
         if self.myturn==1:
             for heroid in self.heroid_dict_move:
@@ -1001,10 +1009,12 @@ class World:
         #reduce remcooldown of abilities by one
         for hero in self.my_heroes:
             for ability in hero.abilities:
-                ability.rem_cooldown-=1
+                if ability.rem_cooldown>0:
+                     ability.rem_cooldown-=1
         for hero in self.opp_heroes:
             for ability in hero.abilities:
-                ability.rem_cooldown-=1
+                if ability.rem_cooldown>0:
+                     ability.rem_cooldown-=1
         #reduce the rem respawn_time of each dead hero
         for hero in self.get_my_dead_heroes():
             if hero.rem_respawm_time>0:
@@ -1024,7 +1034,7 @@ class World:
                     if ability.type==AbilityType.DEFENSIVE:
                         if (ability.name == AbilityName.HEALAR_HEAL):
                             for hero in live_my_heros:
-                                if self.manhattan_distance(hero.current_cell,self.heroid_dict_action[heroid][ability]) < ability.area_of_affect:
+                                if self.manhattan_distance(hero.current_cell,self.heroid_dict_action[heroid][ability]) < ability.area_of_effect:
                                     hero.current_hp += ability.power
                                     if (hero.current_hp > hero.max_hp):
                                         hero.current_hp = hero.max_hp
@@ -1032,7 +1042,7 @@ class World:
                             self.my_ap-=ability.ap_cost
                         if (ability.name==AbilityName.GUARDIAN_FORTIFY):
                             for hero in live_my_heros:
-                                if self.manhattan_distance(hero.current_cell,self.heroid_dict_action[heroid][ability])< ability.area_of_affect:
+                                if self.manhattan_distance(hero.current_cell,self.heroid_dict_action[heroid][ability])< ability.area_of_effect:
                                     hero.is_protected=True
                             ability.rem_cooldown=ability.cooldown
                             self.my_ap -= ability.ap_cost
@@ -1054,7 +1064,7 @@ class World:
                         if ability.type == AbilityType.DEFENSIVE:
                             if (ability.name == AbilityName.HEALAR_HEAL):
                                 for hero in live_opp_heros:
-                                    if self.manhattan_distance(hero.current_cell,self.opp_heroid_dict_action[heroid][ability]) < ability.area_of_affect:
+                                    if self.manhattan_distance(hero.current_cell,self.opp_heroid_dict_action[heroid][ability]) < ability.area_of_effect:
                                         hero.current_hp += ability.power
                                         if (hero.current_hp > hero.max_hp):
                                             hero.current_hp = hero.max_hp
@@ -1062,7 +1072,7 @@ class World:
                                 self.my_ap -= ability.ap_cost
                             if (ability.name == AbilityName.GUARDIAN_FORTIFY):
                                 for hero in live_opp_heros:
-                                    if self.manhattan_distance(start_cell=hero.current_cell,end_cell=self.opp_heroid_dict_action[heroid][ability]) < ability.area_of_affect:
+                                    if self.manhattan_distance(start_cell=hero.current_cell,end_cell=self.opp_heroid_dict_action[heroid][ability]) < ability.area_of_effect:
                                         hero.is_protected = True
                                 ability.rem_cooldown = ability.cooldown
                                 self.my_ap -= ability.ap_cost
@@ -1084,7 +1094,7 @@ class World:
                 for heroid in item:#this for has one iteration
                     for ability in item[heroid]:#this for has one iterarion
                         for hero in live_opp_heros:
-                            if self.manhattan_distance(start_cell=hero.current_cell,end_cell=item[heroid][ability])<ability.area_of_affect:
+                            if self.manhattan_distance(start_cell=hero.current_cell,end_cell=item[heroid][ability])<ability.area_of_effect:
                                 hero.current_hp-=ability.power
                                 if (hero.current_hp <= 0):
                                     self.opp_new_dead_hero += [hero]
@@ -1101,14 +1111,14 @@ class World:
                                             flag += [m]
                                         m += 1
                                     a = np.random.permutation(4)
-                                    hero.current_cell = self.map.my_respawn_zone[a[0]]
+                                    hero.current_cell = self.map.my_respawn_zone[flag[a[0]]]
                         self.my_ap-=ability.power
                         ability.rem_cooldown = ability.cooldown
             for item in self.save_opp_offensive_ability:
                 for heroid in item:#this for has one iteration
                     for ability in item[heroid]:#this for has one iterarion
                         for hero in live_my_heros:
-                            if self.manhattan_distance(start_cell=hero.current_cell,end_cell=item[heroid][ability])<ability.area_of_affect:
+                            if self.manhattan_distance(start_cell=hero.current_cell,end_cell=item[heroid][ability])<ability.area_of_effect:
                                 hero.current_hp-=ability.power
                                 if(hero.current_hp<=0):
                                     self.my_new_dead_hero+=[hero]
@@ -1125,7 +1135,7 @@ class World:
                                             flag+=[m]
                                         m+=1
                                     a=np.random.permutation(4)
-                                    hero.current_cell=self.map.my_respawn_zone[a[0]]
+                                    hero.current_cell=self.map.my_respawn_zone[flag[a[0]]]
 
 
                         self.my_ap-=ability.power
@@ -1155,7 +1165,7 @@ class World:
             if hero.current_cell.is_in_objective_zone:
                 self.opp_score += self.game_constants.objective_zone_score
         # check_for game over
-        if (self.current_turn == self.game_constants.max_turns):
+        if self.current_turn == self.game_constants.max_turns or self.my_score>=200 or self.opp_score>=200:
             self.game_over = True
             if self.my_score > self.opp_score:
                 return 1

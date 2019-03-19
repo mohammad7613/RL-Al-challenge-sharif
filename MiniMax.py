@@ -1,4 +1,4 @@
- import numpy as np
+import numpy as np
 class Layer:
     def __init__(self,action_layer,value_layer,op):
         self.action_layer = action_layer

@@ -26,38 +26,45 @@ class AI:
         self.min_max_tree.backup()
 
     def pick(self, world):
-        print(self.name + ": "+"pick")
-        if len(world.opp_heroes) > 0 :
-            opp_picked_hero = world.opp_heroes[-1].name
-            print(self.name + ": "+"opponnent in the last round picked:{}".format(opp_picked_hero))
-            if opp_picked_hero == HeroName.BLASTER:
-                self.pick_history.append(1)
-            if opp_picked_hero == HeroName.GUARDIAN:
-                self.pick_history.append(3)
-            if opp_picked_hero == HeroName.HEALER:
-                self.pick_history.append(2)
-            if opp_picked_hero == HeroName.SENTRY:
-                self.pick_history.append(0)
-        value, pick_number = self.min_max_tree.best_action(self.pick_history)
-        self.pick_history.append(pick_number)
-        hero_names = [hero_name for hero_name in HeroName]
-        print(self.name + ": "+"we picked {} in this round!".format(hero_names[int(pick_number)].name))
-        world.pick_hero(hero_names[int(pick_number)])
+        print(self.name + ": "+"pick AI")
+        # if len(world.opp_heroes) > 0 :
+        #     opp_picked_hero = world.opp_heroes[-1].name
+        #     print(self.name + ": "+"opponnent in the last round picked:{}".format(opp_picked_hero))
+        #     if opp_picked_hero == HeroName.BLASTER:
+        #         self.pick_history.append(1)
+        #     if opp_picked_hero == HeroName.GUARDIAN:
+        #         self.pick_history.append(3)
+        #     if opp_picked_hero == HeroName.HEALER:
+        #         self.pick_history.append(2)
+        #     if opp_picked_hero == HeroName.SENTRY:
+        #         self.pick_history.append(0)
+        # value, pick_number = self.min_max_tree.best_action(self.pick_history)
+        # self.pick_history.append(pick_number)
+        # hero_names = [hero_name for hero_name in HeroName]
+        # print(self.name + ": "+"we picked {} in this round!".format(hero_names[int(pick_number)].name))
+        #
+        world.pick_hero(HeroName.BLASTER)
+        world.pick_hero(HeroName.BLASTER)
+        world.pick_hero(HeroName.BLASTER)
+        world.pick_hero(HeroName.BLASTER)
+
 
     def move(self, world):
-        print(self.name + ": "+"move")
+        #print(self.name + ": "+"move")
         if world.current_turn == 4 and world.move_phase_num == 2:
             if world.my_heroes[0].id == 0 and self.name == "p1":
-                print("True")
+                #print("True")
+                pass
             else:
-                print("False")
+                #print("False")
+                pass
 
         dirs = [direction for direction in Direction]
         for hero in world.my_heroes:
             world.move_hero(hero=hero, direction=dirs[randint(0, len(dirs) - 1)])
 
     def action(self, world):
-        print(self.name + ": "+"action")
+        #print(self.name + ": "+"action")
         for hero in world.my_heroes:
             row_num = randint(0, world.map.row_num)
             col_num = randint(0, world.map.column_num)
