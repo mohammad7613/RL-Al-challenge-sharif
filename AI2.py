@@ -3604,10 +3604,10 @@ class AI2:
                         world.cast_ability(hero=world.my_heroes[3],ability=world.my_heroes[3].get_ability(fa),cell=OPCEL[3])
                         P = 1
 
-        mnn=world.my_score
-        onn=world.opp_score
-        print(mnn)
-        print(onn)
+        # mnn=world.my_score
+        # onn=world.opp_score
+        # print(mnn)
+        # print(onn)
 
 
 

@@ -404,7 +404,10 @@ def bestdoge(world,start_cell,end_cell,dr):
     return celdog
   
 ####################################################################################################################
+i=0
 class AI3:
+    def __init__(self,):
+        self.flag=0
 
 
 
@@ -423,120 +426,144 @@ class AI3:
 
     def move(self, world):
         #print("move")
-        opp_heroes_cel = my_heros_cells(world)
-        opp=oplive(world)
-        c = world.map.objective_zone
-
-            #################################################################healer aval
-        objective_zone_cells = world.map.objective_zone
-        myhero = world.opp_heroes
-
-        cell0 = world.opp_heroes[0].current_cell
-        goodpos1 = healpos(world,myhero[0])
-        dir0 = []
-        healer_num1 = 0
-        heroes_hp = opp_heroes_hp(world)
-        heal = AbilityName.HEALER_HEAL
-        attack_healer = AbilityName.HEALER_ATTACK
-        name=world.opp_heroes[0]
-        h = world.opp_heroes[0].get_ability(attack_healer)
-        on_atak_healer=h.is_ready()
-        on_heal = world.opp_heroes[0].get_ability(heal).is_ready()
-        khatar_hero = []
-        khatar = opp_hero_attacked(world, myhero[0])
-        for hero in myhero :
-            kh = opp_hero_attacked(world,hero)
-            khatar_hero.append(kh)
-
-        #print("khatar_hero.append(kh)=",khatar_hero)
-##################################### ES 1    :    go to best cell
-        #print("goodpos1=",goodpos1)
-        if len(goodpos1)>0 :
-           best_cell = nearest_cel(world,cell0,goodpos1)
-           #print("best_cell =",best_cell)
-           dir1_0 = world.get_path_move_directions(start_cell=cell0,end_cell=best_cell[0])
-           #print("dir1_0",dir1_0)
-           if len(dir1_0)==0 and healer_num1 == 0:
-               healer_num1 = 1
-           if len(dir1_0)>0 and healer_num1 == 0 :
-               world.move_hero(hero=myhero[0],direction=dir1_0[0])
-               healer_num1 = 1
-
-####################################### ES 2     :  farar kone
-        if khatar > 2 and healer_num1 == 0:
-            min_khatar = min(khatar_hero)
-            for heroo in myhero :
-                if opp_hero_attacked(world,heroo) == min_khatar:
-                    ce = heroo.current_cell
-                    dir6_0 = world.get_path_move_directions(start_cell=cell0,end_cell=ce)
-                    world.move_hero(hero=myhero[0], direction=dir6_0[0])
-                    healer_num1 =1
-####################################### ES 3       : heal kone
-        if healer_num1 == 0 :
-             goodcell2 = nearest_cel(world,cell0,objective_zone_cells)
-             dir1_1 = world.get_path_move_directions(start_cell=cell0, end_cell=goodcell2[0])
-             if len(dir1_1) > 0:
-                 world.move_hero(hero=myhero[0], direction=dir1_1[0])
-                 healer_num1 = 1
-        if cell0.is_in_objective_zone is True and healer_num1==0 :
-            if heroes_hp[0] < 70 and opp_hero_attacked(world,myhero[0]) > 0 and on_heal is True :
-                healer_num1 =1
-            if heroes_hp[2]<heroes_hp[3] and healer_num1==0 :
-                if heroes_hp[2]<70 :
-                    dir2_0 = world.get_path_move_directions(start_cell=cell0,end_cell=opp_heroes_cel[2])
-                    if world.manhattan_distance(cell0,opp_heroes_cel[2])<=4 and on_heal is True:
-                        healer_num1 = 1
-                    elif  healer_num1==0 and len(dir2_0)>0:
-                         world.move_hero(myhero[0],dir2_0[0])
-            elif heroes_hp[3]<70 :
-                dir3_0 = world.get_path_move_directions(start_cell=cell0,end_cell=opp_heroes_cel[3])
-                if world.manhattan_distance(cell0,opp_heroes_cel[3])<=4 and on_heal is True :
-                    healer_num1 = 1
-                elif healer_num1 == 0 and len(dir3_0)>0:
-                    world.move_hero(myhero[0],dir3_0[0])
-######################################### ES 4         : attack kone   2  ##############################################
-        if len(opp)>0 and cell0.is_in_objective_zone is True and heroes_hp[0]>70 and heroes_hp[2]>70 and heroes_hp[3]>70 and healer_num1==0 :
-            near_op_hero= nearest_opphero(world,cell0)
-            dir4_0 = world.get_path_move_directions(start_cell=cell0, end_cell=near_op_hero.current_cell)
-            if world.manhattan_distance(cell0, near_op_hero.current_cell) <= 4 and on_atak_healer is True:
-                healer_num1 =1
-            elif healer_num1 == 0 and len(dir4_0)>0 :
-               world.move_hero(myhero[0], dir4_0[0])
-######################################## ES 5          : baghie ra heal kone
-        if len(opp) ==0 :
-            iii = [0,1,2,3]
-            for ii in iii:
-                if heroes_hp[ii] == min(heroes_hp):
-                    dir5_0 = world.get_path_move_directions(start_cell=cell0, end_cell=opp_heroes_cel[ii])
-                    if world.manhattan_distance(cell0, opp_heroes_cel[ii]) <= 4 and on_heal is True:
-                        healer_num1 = 1
-                    elif healer_num1 == 0 and len(dir5_0)>0:
-                        world.move_hero(myhero[0], dir5_0[0])
-
-        DO = world.get_path_move_directions(start_cell=opp_heroes_cel[1], end_cell=c[10])
-        if len(DO) > 0:
-            world.move_hero(hero=world.opp_heroes[1], direction=DO[0])
-        DO = world.get_path_move_directions(start_cell=opp_heroes_cel[2], end_cell=c[5])
-        if len(DO) > 0:
-            world.move_hero(hero=world.opp_heroes[2], direction=DO[0])
-        DO = world.get_path_move_directions(start_cell=opp_heroes_cel[3], end_cell=c[15])
-        if len(DO) > 0:
-            world.move_hero(hero=world.opp_heroes[3], direction=DO[0])
+#         opp_heroes_cel = my_heros_cells(world)
+#         opp=oplive(world)
+#         c = world.map.objective_zone
+#
+#             #################################################################healer aval
+#         objective_zone_cells = world.map.objective_zone
+#         myhero = world.opp_heroes
+#
+#         cell0 = world.opp_heroes[0].current_cell
+#         goodpos1 = healpos(world,myhero[0])
+#         dir0 = []
+#         healer_num1 = 0
+#         heroes_hp = opp_heroes_hp(world)
+#         heal = AbilityName.HEALER_HEAL
+#         attack_healer = AbilityName.HEALER_ATTACK
+#         name=world.opp_heroes[0]
+#         h = world.opp_heroes[0].get_ability(attack_healer)
+#         on_atak_healer=h.is_ready()
+#         on_heal = world.opp_heroes[0].get_ability(heal).is_ready()
+#         khatar_hero = []
+#         khatar = opp_hero_attacked(world, myhero[0])
+#         for hero in myhero :
+#             kh = opp_hero_attacked(world,hero)
+#             khatar_hero.append(kh)
+#
+#         #print("khatar_hero.append(kh)=",khatar_hero)
+# ##################################### ES 1    :    go to best cell
+#         #print("goodpos1=",goodpos1)
+#         if len(goodpos1)>0 :
+#            best_cell = nearest_cel(world,cell0,goodpos1)
+#            #print("best_cell =",best_cell)
+#            dir1_0 = world.get_path_move_directions(start_cell=cell0,end_cell=best_cell[0])
+#            #print("dir1_0",dir1_0)
+#            if len(dir1_0)==0 and healer_num1 == 0:
+#                healer_num1 = 1
+#            if len(dir1_0)>0 and healer_num1 == 0 :
+#                world.move_hero(hero=myhero[0],direction=dir1_0[0])
+#                healer_num1 = 1
+#
+# ####################################### ES 2     :  farar kone
+#         if khatar > 2 and healer_num1 == 0:
+#             min_khatar = min(khatar_hero)
+#             for heroo in myhero :
+#                 if opp_hero_attacked(world,heroo) == min_khatar:
+#                     ce = heroo.current_cell
+#                     dir6_0 = world.get_path_move_directions(start_cell=cell0,end_cell=ce)
+#                     world.move_hero(hero=myhero[0], direction=dir6_0[0])
+#                     healer_num1 =1
+# ####################################### ES 3       : heal kone
+#         if healer_num1 == 0 :
+#              goodcell2 = nearest_cel(world,cell0,objective_zone_cells)
+#              dir1_1 = world.get_path_move_directions(start_cell=cell0, end_cell=goodcell2[0])
+#              if len(dir1_1) > 0:
+#                  world.move_hero(hero=myhero[0], direction=dir1_1[0])
+#                  healer_num1 = 1
+#         if cell0.is_in_objective_zone is True and healer_num1==0 :
+#             if heroes_hp[0] < 70 and opp_hero_attacked(world,myhero[0]) > 0 and on_heal is True :
+#                 healer_num1 =1
+#             if heroes_hp[2]<heroes_hp[3] and healer_num1==0 :
+#                 if heroes_hp[2]<70 :
+#                     dir2_0 = world.get_path_move_directions(start_cell=cell0,end_cell=opp_heroes_cel[2])
+#                     if world.manhattan_distance(cell0,opp_heroes_cel[2])<=4 and on_heal is True:
+#                         healer_num1 = 1
+#                     elif  healer_num1==0 and len(dir2_0)>0:
+#                          world.move_hero(myhero[0],dir2_0[0])
+#             elif heroes_hp[3]<70 :
+#                 dir3_0 = world.get_path_move_directions(start_cell=cell0,end_cell=opp_heroes_cel[3])
+#                 if world.manhattan_distance(cell0,opp_heroes_cel[3])<=4 and on_heal is True :
+#                     healer_num1 = 1
+#                 elif healer_num1 == 0 and len(dir3_0)>0:
+#                     world.move_hero(myhero[0],dir3_0[0])
+# ######################################### ES 4         : attack kone   2  ##############################################
+#         if len(opp)>0 and cell0.is_in_objective_zone is True and heroes_hp[0]>70 and heroes_hp[2]>70 and heroes_hp[3]>70 and healer_num1==0 :
+#             near_op_hero= nearest_opphero(world,cell0)
+#             dir4_0 = world.get_path_move_directions(start_cell=cell0, end_cell=near_op_hero.current_cell)
+#             if world.manhattan_distance(cell0, near_op_hero.current_cell) <= 4 and on_atak_healer is True:
+#                 healer_num1 =1
+#             elif healer_num1 == 0 and len(dir4_0)>0 :
+#                world.move_hero(myhero[0], dir4_0[0])
+# ######################################## ES 5          : baghie ra heal kone
+#         if len(opp) ==0 :
+#             iii = [0,1,2,3]
+#             for ii in iii:
+#                 if heroes_hp[ii] == min(heroes_hp):
+#                     dir5_0 = world.get_path_move_directions(start_cell=cell0, end_cell=opp_heroes_cel[ii])
+#                     if world.manhattan_distance(cell0, opp_heroes_cel[ii]) <= 4 and on_heal is True:
+#                         healer_num1 = 1
+#                     elif healer_num1 == 0 and len(dir5_0)>0:
+#                         world.move_hero(myhero[0], dir5_0[0])
+#
+#         DO = world.get_path_move_directions(start_cell=opp_heroes_cel[1], end_cell=c[10])
+#         if len(DO) > 0:
+#             world.move_hero(hero=world.opp_heroes[1], direction=DO[0])
+#         DO = world.get_path_move_directions(start_cell=opp_heroes_cel[2], end_cell=c[5])
+#         if len(DO) > 0:
+#             world.move_hero(hero=world.opp_heroes[2], direction=DO[0])
+#         DO = world.get_path_move_directions(start_cell=opp_heroes_cel[3], end_cell=c[15])
+#         if len(DO) > 0:
+#             world.move_hero(hero=world.opp_heroes[3], direction=DO[0])
 
         ###################################
 
 
        ################################
-        
+        if self.flag==0:
+            self.flag=1
+            self.target_cell = []
+            self.target_cell.append(world.map.get_cell(row=12, column=12))
+            self.target_cell.append(world.map.get_cell(row=12, column=17))
+            self.target_cell.append(world.map.get_cell(row=18, column=14))
+            self.target_cell.append(world.map.get_cell(row=18, column=18))
+
+        opp_live_hero=world.get_opp_live_heroes()
+        # for hero in opp_live_hero:
+        #    direction=world.get_path_move_directions(start_cell=hero.current_cell,end_cell=self.target_cell[i])
+        #    world.move_hero(hero=hero,direction[0])
+        #    i++
+        def move1(hero):
+            global i
+            direction = get_path_move_directions(start_cell=hero.current_cell, end_cell=self.target_cell[i],world=world)
+            if len(direction) is not 0 and direction is not None:
+                world.move_hero(hero=hero,direction=direction[0])
+            i+=1
+        list(map(move1,opp_live_hero))
+        global i
+        i=0
+
+
        
 
     def action(self, world):
         print("action")
+
         
-        mnn=world.my_score
-        onn=world.opp_score
-        print(mnn)
-        print(onn)
+        # mnn=world.my_score
+        # onn=world.opp_score
+        # print(mnn)
+        # print(onn)
 
 
 

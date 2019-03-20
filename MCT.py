@@ -236,11 +236,12 @@ class game:
                 self.handle_move()
             elif (self.currentworld.current_phase == Phase.ACTION):
                 self.handle_action()
+                print("myturn:{},myscore:{},oppscore:{}".format(game.currentworld.current_turn,game.currentworld.my_score,game.currentworld.opp_score))
             for hero in self.currentworld.my_heroes:
                 print("heroid:{},heroname:{},herohealth:{},heroposition:({},{})".format(hero.id,hero.name,hero.current_hp,hero.current_cell.row,hero.current_cell.column))
             for hero  in self.currentworld.opp_heroes:
-                print("heroname:{},herohealth:{},heroposition:({},{})".format(hero.name,hero.current_hp,hero.current_cell.row,hero.current_cell.column))
-        delattr("currentworld")
+                print("heroid:{},heroname:{},herohealth:{},heroposition:({},{})".format(hero.id,hero.name,hero.current_hp,hero.current_cell.row,hero.current_cell.column))
+        delattr(game,"currentworld")
         print("world")
 
 
@@ -250,8 +251,9 @@ if __name__ == '__main__':
    player1 = AI2()
    player2 = AI3()
    game=game(player1,player2)
-   for hero in game.currentworld.opp_heroes:
-       print(hero.name)
+   for cell in game.currentworld.map.objective_zone:
+       print(cell.row)
+       print(cell.column)
    game.run()
 
 
